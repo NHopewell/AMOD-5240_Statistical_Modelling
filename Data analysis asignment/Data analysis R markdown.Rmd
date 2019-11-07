@@ -1,0 +1,277 @@
+---
+title: 'House Prices: Regression'
+author: "Nick Hopewell"
+date: "November 11, 2017"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+options(width=80)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = TRUE)
+setwd("C:\\Users\\nicho\\Desktop\\Assignments\\Statistical Modelling assignments\\Data analysis asignment")
+```
+
+
+```{r}
+#  Load required packages
+library(ggplot2)
+library(lubridate)
+library(gridExtra)
+library(corrplot)
+library(psych)
+library(Hmisc)
+library(dplyr)
+
+```
+
+## Data Inspection and Preprocessing 
+
+
+**Read in the data file**
+
+```{r}
+#  Set working directory 
+setwd("C:\\Users\\nicho\\Desktop\\Assignments\\Statistical Modelling assignments\\Data analysis asignment")
+
+#  Read csv file and save in object 'priceData'
+priceData<-read.csv("house_prices.csv", header = TRUE)
+
+```
+This dataset includes the sale prices of houses in King County, Washington between May 2014 and May 2015. Seattle is the largest city within King County and is the seat of the county. Kings County is the thirteethn most populaous county in America. 
+  
+  
+**Print out first few rows**  
+
+```{r}
+#View(priceData) 
+
+head(priceData)
+
+```
+Below are descriptions of the attributes in this data set:  
+
+  * **id**: The id of the house sold  
+  * **date**: The date the house was sold  
+  * **price**: The price the house was sold for - target 
+  * **bedrooms**: Number of bedrooms in the house  
+  * **bathrooms**: Number of bathrooms in the house  
+  * **sqft_living**: Sqaure footage of living space (house)  
+  * **sqrt_lot**: Sqaure footage of the lot  
+  * **floors**: Number of floors in the house  
+  * **waterfront**: Whether the house has a waterfront view  
+  * **view**: Number of viewings of the house   
+  * **condition**: The overall condition of the house  
+  * **grade**: grade of the house based on King County grading conditions  
+  * **sqrt_above**: square footage of house above ground (excluding basement)  
+  * **sqft_basement**: square footage of the basement  
+  * **yr_built**: The year the house was build  
+  * **yr_renovated**: The year the house was renovated (if it was renovated)  
+  * **zipcode**: Zipcode of house  
+  * **lat**: Latitude of house  
+  * **long**: Longitude of house  
+  * **sqrt_living15**: Living area square footage in 2015 (possibly implies renovations and also may impact lot size)  
+  * **sqrt_lot15**: Lot sqaurefootage in 2015 (possibly implies renovations)  
+  
+  
+
+
+<br />  
+
+**Minor Preprocessing**  
+
+The 'date' attribute is not in a proper format and must be fixed with lubridate: 
+```{r}
+#  fix date
+priceData$date <- gsub("T000000", "", priceData$date)
+priceData$date <- ymd(priceData$date)
+head(priceData$date)
+```
+
+
+In addition, simply knowing the house was renovated is no very informative. If one house were renovated in 1989 and another were renovated in 1990 does knowing this fact allow a better prediction of house prices? Likely not. In addition, dated renovations likely do not add nearly as much value (if any depending on how dated) when compared to newer renovations. For this reason, its more informative to know whether a house has very recent renovations, relatively new renovations, dated renovations, or no renovations at all. Therefore, the yr_renovated attribute will be divded into these catagories and renamed to simply'renovations' to match the semantics of this altered atribute.  
+
+*  4 = Very new renovation (less than 2 yrs)
+*  3 = New renovation (last 5 yrs)
+*  2 = Quite dated renovation (last 10 years)
+*  1 = Very dated renovation (more than 10 years old)
+*  0 = no renovation
+
+I also thought it might be interesting to see if whether a house having a basement made much of a difference in terms of the sale price of the house. To see this I first will have to add a new attribute to the dataset based on the existing attribute 'sqft_basement' called 'basement' which is binary and simply indicated whether a house has a basement or not.  
+
+Finally, some attributes are not interesting to the current analysis, including house id, geographical, and zipcode attributes. A subset which does not include these attributes will be retained for anaylsis.  
+
+```{r}
+
+# #  change year renovated to a categorical attribute based on years since renovation occured
+# #priceData$yr_renovated <-  ifelse(priceData$yr_renovated >= 2014, 4,
+#                                   ifelse(priceData$yr_renovated >= 2010, 3,
+#                                         ifelse(priceData$yr_renovated >= 2005, 2, 
+#                                               ifelse(priceData$yr_renovated > 0, 1, 0)
+#                  )
+#        )
+# )
+
+
+#  name does not fit anymore so change it
+#priceData <- rename(priceData, renovations = yr_renovated)
+
+
+#  does the house have a basement?
+#priceData <- mutate(priceData,
+#               basement = ifelse(priceData$sqft_basement >1, 1, 0))
+
+
+#  retain only interesting variables
+#priceData <- select(priceData, date:renovations, basement)
+
+# this is what the data now looks like:
+head(priceData)
+```
+  
+    
+**Early Evaluation Considerations**  
+
+
+As I am not building a regression model as an extension of passed research to compare hierarchically with established models, and I do not have the grounds to justify a forced entry regression model (again because I am not looking at a researched topic/testing a hypothesis and thus have no good theoretical reasons for including predictors), I know I will be building a stepwise multiple regression model and evaluating its fit to the data.  
+
+Stepwise regression models can be validated using holdout cross-validation or k-fold cross validation. I am not going to validate the model in this project but if I were going to the below code could be used to split the data into training and testing sets for holdout validaiton.
+
+
+```{r}
+# If I wanted to do cross-validation after building the model:
+
+#split = sample(1:nrow(priceData), size = 0.20*nrow(priceData))
+#trainData = priceData[-split,] #Train dataset 80% of total
+#testData = priceData[split,] #Test dataset 20% of total
+
+```
+##Exploratory analysis of the data set  
+
+Summary statistics, grouped summaries, and correlations. 
+
+```{r}
+#  Examine the structure of the data set
+str(priceData)
+```
+Can see that the date is now a date data type and the rest are integers and real numbers.  
+
+```{r}
+#  Get summary statistics (min, max, median, mean, 1st and 3rd quartiles) for each variable
+summary(priceData)
+```
+The lowest house price in the data set is \$75,000 while the highest is \$7,700,000. The average house price in the data set is \$540,088. Most houses have 3 or more bedrooms and 2 or more bathrooms while one house has as many as 33 bedrooms and 8 bathrooms. The amount of living space is 2080 square feet but one house is as small as 290 square feet while another is as large as 13,540 square feet. In terms of outdoor space, the average for these data is 15,107 square feet but this number is being pulled up by a property with a massive yard at 1,651,359 square feet; the median lot space is 7,618 square feet. This number is way too high for average outdoor lot space so I assume many of these houses sold were country side homes. The earliest a house was built was 1900 while the median year built is 1975. It also appears that most houses have had at least some renovations done at some point in there history.  
+
+<br />  
+
+Average price grouped by number of bedrooms:
+```{r}
+priceData %>% 
+  group_by(bedrooms) %>% 
+  summarise(mean(price))
+
+```
+
+
+<br />   
+
+Average price grouped by number of bathrooms:
+```{r}
+priceData %>% 
+  group_by(bathrooms) %>% 
+  summarise(mean(price))
+```
+
+```{r}
+price_by_sqftliving <- priceData %>% 
+  group_by(yr_renovated) %>%
+  summarise(
+    count = n(),
+    sqftlive = mean(sqft_living, na.rm = TRUE),
+    pricelive = mean(price, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20)
+
+
+
+ggplot(data = price_by_sqftliving, mapping = aes(x = sqftlive, y = pricelive)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+```
+
+
+
+**Visualizations**  
+
+First, I want to visualize an r-matrix of the variables.
+
+```{r}
+# begin with correlations
+priceSub <- select(priceData, -date)
+
+#  the correlation with the basement variable (binary) is a point-biseral correlation
+cors <- round(cor(priceSub, use = "complete.obs", method = "pearson"), 3)
+
+
+# rcorr includes pvalues
+cors2 <- rcorr(as.matrix(priceSub))
+```
+
+```{r}
+#  these can be combined and flattened into a nice table
+
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+  )
+}
+
+
+corMat <- rcorr(as.matrix(priceData[,-c(1)]))
+#  filter output to only show correlations with price 
+filter(flattenCorrMatrix(corMat$r, corMat$P), row == 'price')
+```
+
+```{r}
+
+corrplot(cors, method = "ellipse", type ='upper', tl.col = "darkblue")
+```
+<br />   
+
+It appears that square foot of living space is not strongly related to housing prices. This makes sense because the most expensive homes are either those inside city-centers (with very small living areas) or those in the country with large lots. Year built is also not storngly related to the price of the house price which again makes sense as a new and old homes can be worth a lot or be very economically priced. Whether the house had renovations or not also is not correlated to price because, as previously mentioned, most houses in this data set have had renovations at some point or another. Something interesting to consider is that the square feet of the basemet is moderately related to house price but the fact that the house has a basement or not is not realted. This is likely because the sqft of the basement is correlated with the sqft of the house which is highly correlated with the price of the house. The number of bathrooms and grade of the property are also highly correlated with house price.  
+
+<br />  
+
+```{r}
+head(priceData)
+```
+
+
+
+
+##Checking Assumptions  
+
+To draw conclusions about a population based on any regression analysis, one must check whether a number are met. Some of these assumptions cannot be checked until after the regression model has run.  
+
+**Predictor Variables**  
+* Data types:  
+* Non-zero variance:  
+* No presence of perfect multicollinearity:  
+* Predictors are not correlated with external variables:  
+<br />  
+
+**Outcome Variable**  
+* Independence:   
+* Linearity with predictors:   
+<br />  
+
+**Residuals** 
+* Homoscedasticity:  
+* Independent errors:   
+* Normally distributed errors:   
+<br /> 

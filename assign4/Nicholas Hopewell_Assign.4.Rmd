@@ -1,0 +1,757 @@
+---
+title: "AMOD 5240: Assignment 4: Regression"
+author: "Nicholas Hopewell"
+date: "November 29, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(gridExtra)
+library(Hmisc)
+library(pastecs)
+knitr::opts_chunk$set(echo = TRUE)
+setwd("C:\\Users\\nicho\\Desktop\\Assignments\\Statistical Modelling assignments\\assign4")
+
+options(scipen = 9999)
+```
+
+##Datacamp
+
+I choose to do the following modual:
+
+* Cleaning Data in R
+
+I believe this modual is helpful because tidy data streamlines analyses.
+
+
+
+
+## Basic Questions
+
+
+**5.4: Identify Relationships**  
+
+<br />  
+
+
+<center> ![](Q5.4.png) </center>  
+
+<br />  
+
+
+**(a)** The strength of the relationship in this data is **strong** but it **is not appropriate** to fit a linear model to the data.     
+**(b)** The strength of the relationship in this data is **strong** but it **is not appropriate** to fit a linear model to the data.  
+**(c)** The strength of the relationship in this data is **strong** and it **is appropriate** to fit a linear model to the data.  
+**(d)** The strength of the relationship in this data is **weak** and it **is appropriate** to fit a linear model to the data.  
+**(e)** The strength of the relationship in this data is **weak to moderate** and it **is appropriate** to fit a linear model to the data.  
+**(f)** The strength of the relationship in this data is **moderate to strong** and it **is appropriate** to fit a straight line to the data.  
+
+
+<br />  
+
+**5.6: Husbands and wives part I**  
+
+<br />  
+
+<center> ![](Q5.6.png) </center>  
+
+<br />  
+
+
+**(a)** There is a strong positive linear relation between husbands' and wives' ages. Couples tend to marry at similar ages and thus older men are often married to older women and vice versa. 
+
+**(b)** There seems to be a moderate relationship between husbands' heights and wives' heights. Although if the few data points with very short wives were removed the relationship would be weaker. Overall, most mean tend to be taller than their wives and shorter men only raely marry a woman taller than themselves; the taller women are mostly married to men of similar height or men who are taller then them. 
+
+**(c)** As correlation is simply the measure of the strength of the linear relationship between two things, plot (a) would have the stronger correlation. Because the best fit line would be quite steap and the data are tightly packed around what would be the best fit line, the correlation would be very strong (which one would guess given the nature of our marriage customs in European cultures).
+
+**(d)**  This unit of measurement conversion is proportional across all data records and correlation is interpreted as an effect size between -1 and 1 so this conversion would not have an influence on the coefficient.  
+
+<br />  
+
+**5.8: Match the correlation**   
+
+<br />  
+
+
+<center> ![](Q5.8.png) </center>   
+
+<br />  
+
+
+**(a)**  (2)
+
+**(b)**  (4)
+
+**(c)**  (3)
+
+**(d)**  (1)  
+
+<br />  
+
+**5.22: Type of outliers in linear regression**  
+
+<br />  
+
+<center> ![](Q5.22.png) </center>  
+
+<br />  
+
+**(a)** This outliar falls far away on the horizontal axis thus it has high leverage. Because it has a large influence on the slope of the line, it is an influential point. It falls very far from the line and had we fitted the line without it, it would be incredibly far from the line. 
+
+**(b)** This outliar has high leverage as it is far away from the main cluster of data on the horizontal axis but it does not have influence on the slope of the line so it is not an influential point. If we fitted the line without this point the line would be indentical.
+
+**(c)** This outlier does not have high leverage, infact it is directly in the center of the horizontal axis and isn't having a noticible impact on the line
+
+<br />  
+
+**5.24: Crawling Babies**  
+
+This point does not have high leverage as it is not distant from the majority of the data on the horizontal axiS. It is not an influential case because it does not have high leverage and would not really impact the slope of a best fit line (if it were fit to the data).  
+
+<br />  
+ 
+**5.30: Husbands and wives part II**  
+
+<br />  
+
+**(a)**  $H_0: \beta_1 = 1$ vs. $H_A: \beta_1 \neq 1$. The p-value for $\beta_1$ is very small so we can reject $H_0$ and conclude the data do provide convincing evidence that the difference in husdand and wife ages differ across age groups. 
+
+**(b)** $\hat{age}_W =$ 1.575 + 0.911 x $age_H$
+
+**(c)** Men who are 0 years old would be expected to have wives who are 1.57 years old on average (this is not meaningful). For each year of age a husbad gains, his wifes age would be expected to increase by 0.911 on average.
+
+**(d)** A positive slope indicates a positive correlation and if we take the square root of the R squared, the correlation would be $R = \sqrt{0.88} =$ 0.938 
+
+**(e)**  $\hat{age}_W =$ 1.575 + 0.911 x 55 = 51.68. If a man was 55 years old we would predict his wife to be about 52 years old. This prediction will be quite accurate because of $R^2$ value is very high.
+
+**(f)** We do not know how data beyond our sample range will behave. Applying this model outside the the range of our data we are assuming that the linear relationship continues in a very similar way at this higher age range. Because the relationship is so strong, one might argue that perhaps it is okay but we do not know and thus we should not extrapolate beyond our datas age range. Perhaps some very old men marry very young women who are gold diggers that bet on the fact that their husband will die soon and give them lots of money, and vice versa. 
+
+
+<br />  
+
+##More Complicated Questions
+
+<br />  
+
+
+##(a). Nutrition at Starbucks  
+
+<br />   
+
+```{r}
+foodData <- read.csv("Nutrition11_30_2017.csv")
+
+```
+
+The scatterplot below shows the relationship between number of calories and amount of carbohydrates in Starbucks food menu items. The data was taken from the nutritional facts section of Starbucks.com. 
+
+Of interest is to predict the amount of carbs a menu items contains based on its calorie content. 
+
+<br />  
+
+$H_A:$ Calorie content is a good predictor of the amount of carbs a food item at Starbucks contains. 
+
+$H_0:$ Calorie content is not a good predictor of the amount of carbs a food item at Starbucks contains. 
+
+<br />   
+
+```{r, echo=FALSE, fig.align='center'}
+
+ggplot(foodData, aes(Calories, Carb...g.)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "calories", y = "Carb (in grams)") 
+
+```
+
+  
+  
+**(a)**  There is a quite strong relationship between number of calories and amount of carbohydrates (in grams) that Starbucks food menu items. Foods higher in calories also tend to be higher and carbs.   
+
+**(b)** The explanatory variable is calorie content of the food product and the response variable is amount of carbs in the food product.  
+
+**(c)** We might want to fit a regression line to these data so we can take a step beyond simply looking at the relationship of calories and carbs and fit a model that allows us to predict the carb content of food based on calorie content. With a linear regression equation, we could input a value for calorie content of some food product which is within an appropriate range modelled by our regression line and get the amount of carbs are model would predict that food to contain on average. 
+
+
+```{r}
+calModel= lm(Carb...g.~Calories, data=foodData)
+
+foodData$predicted = round(predict(calModel),3)
+foodData$residuals = round(resid(calModel),3)
+
+head(foodData[, -c(1)])
+
+
+```
+
+```{r,echo=FALSE, fig.align='center'}
+hist(foodData$residuals, col = 'darkgrey')
+
+plot(foodData$residuals)
+abline(h=0, lwd=2, lty=3)
+
+```
+  
+  
+**(d)**  
+
+To determine whether fitting a least squares line is appropriate, assumptions must be checked:
+
+* **Linearity:** The data does show a lineary trend. It is clear that there is a linear relationship between calorie and carb content of Starbucks food items.  
+
+* **Nearly Normal Residuals:** The residuals are not exacty normal but quite close. I am going to test this assumption a bit more in depth as the basic histogram makes me sad. 
+
+<br />  
+
+First a ggplot histogram with a fitted normal curve based on the mean and of the distribution of residuals:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+starFood.errors <- ggplot(foodData, aes(residuals)) + 
+  labs(legend.position = "none") + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(foodData$residuals, na.rm = TRUE), 
+                            sd = sd(foodData$residuals, na.rm = TRUE)), 
+                colour = "black", size = 1) +
+  labs(x="MODEL RESIDUALS", y = "Density")
+
+starFood.errors
+
+
+```
+
+This appears to be approximately normal.
+
+<br />  
+
+
+Next, a qqplot of the residuals:
+
+```{r, echo=FALSE}
+
+qqplot.residuals <- qqnorm(foodData$residuals,
+                           xlab = "Theoretical Quantiles", 
+                           ylab = "Sample Quantiles RESIDUALS")
+qqline(foodData$residuals)
+
+```
+
+Again, it is not totally normal as there is some noticible stray from the diagonal but it is close.
+
+<br />  
+
+Finally, I am going to use a Shapiro-Wilks test to test the null hypothesis that the distribution of residuals is nearly normal. If $p$ > .05, I would reject the null and conclude that the distribution of residuals was significantly different from a normal distribution (in other others, is not normal).
+
+```{r, echo=FALSE}
+
+shapiro.test(foodData$residuals)
+
+```
+
+Looks like the Shapiro-Wilks allows me to conclude the distribution is approximately normal.
+
+<br />  
+
+I will conclude that the assumption of nearly normally distributed residuals has not been violated.
+
+<br />  
+
+* **Constant Variance:**  The variability around the least squares line should be approximately constant. To test this I am going to plot of the predicted and residuals values.
+
+```{r, echo=FALSE}
+scatter <- ggplot(foodData, aes(predicted, residuals))
+scatter + geom_point() + 
+  #geom_smooth()+
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "PREDICTED VALUES (FITTED)", y = "RESIDUALS") 
+
+```
+
+The variance seems approximately constant around the least squares line, therefore we have homoscedasticity. 
+
+
+<br />   
+
+* **Independant Observations:** The observations should be independant. I see no reason they would not be.  
+
+<br />   
+
+
+**In conclusion**, these data do meet the conditions required for fitting a least squares line. 
+
+
+
+<br />   
+
+Below is a summary of the model fit.
+
+```{r}
+summary(calModel)
+```
+<br />   
+
+
+A simple linear regression model was run to predict the amount of carbs a menu item at Starbucks contains based on its calorie content. It appears that calorie content accounts for 51.44% of the variation in the amount of carbs of food items. For these data, $F(1,113) = 119.7, p < .001$, which informs us that there is less than a 0.1% chance of see an $F$-ratio this large if the null hypothesis were true. Therefore, the regression model is significantly better for predicting the amount of carbs in Starbucks food items compared to if we simply used the mean carb amount for our prediction. Due to the tiny $p$-value, we are more confident that calories are a good predictor of carbs. Ultimately, we reject the null hypothesis and conclude that the regression model which includes calorie content predicts amount of carbs significantly well. 
+
+<br />   
+
+$B_0$ informs us that if a food item had 0 calories it would have just over 10grams of carbs on average. This does not make sense because if a food item had any carbs then it would have some amount of calories.  
+
+$B_1$ informs us that every 1 calorie increase in a Starbucks food item is associated an increase in the amount of carbs by 0.089. 
+
+
+<br /> 
+
+##(b). Body Dimensions (bdmis data set)  
+
+<br />   
+
+This data set, found in the openintro package, contains information about the body dimensions of 507 phyically fit individuals. We are interested in predicting the weight (in kilograms) of an individual based on all significant predictors using stepwise multiple regression to determine which predictors should be retained in the model. 
+
+**NOTE:** Stepwise regression is data-driven. We are not testing a particular hypothesis here. We are deriving a model purely from the data and no prior informartion/research. Therefore, I will not state hypothises.
+
+<br />  
+
+
+```{r, message=FALSE, warning=FALSE}
+library(openintro) # for data set
+
+bdimsData = bdims
+head(bdimsData)
+str(bdimsData)
+```
+<br />  
+
+Selection criterion used for stepwise regression all serve the very similar purpose of upholding the principle of parsimony allowing the derivation of a model which is as simple as possible but no simpler. A lot of this comes down to a trade off between model complexity and generalizability error. A more complex model will always fit that data better assuming the predictors have even the slightest relationship to the outcome variable at the cost of being less generalizable to unseen data (data in which the model was not built with). The idea is to arrive at a model which explains the most variability in the outcome variable being predicted without modelling noise of the training data and parsing out unique variance explained (especially when predictors share a large amount of variance, we want to know what unique variance they account for in the outcome model).  
+
+The problem with the predictors in this dataset are that one does not need to look at an r-matrix to know that these predictors are highly interrelated (they all have to do with body dimensions, people who fit into certain body types have similar trends in their proportions). This presents a concern about multicollinearity. An option besides subset selection methods might be to use principle components analysis to decompose these related variables into a much smaller set of orthogonal (uncorrelated) factors (called  principle components). 
+
+I am not going to create a data dictionary for every variable of this dataset. When important predictors are retained I will then talk about what those variable names represent.
+
+<br />  
+
+
+<br />  
+
+**Stepwise selection**  
+
+Using stepwise regression methods to select subsets of predictors.
+<br />  
+
+
+**NOTE:** I won't spam the outpus of these selection algorithms to screen because it is a ton of information but I will show the code so you can see it was done right. You said be thorough so I am going to show two different methods to achieve the same goals:
+
+**NOTE:** I will show the code for doing forward, backwards, and both ways selection but I will only actually do forwards selection because comparing the subsets selected from 3 different methods using two different techniques each would take forever with this many variables. I also did an all subsets method for bonus points and ploted the aic and bic but it was so lengthy and was not stepwise regression so I took it out. 
+
+<br />  
+
+**1. Forwards selection (step up)** 
+
+With forward selection, the model starts at the basic model and searchers through all models between the basic and the full models using forward selection to add predictors at each step while checking the new (more complicated) models change in an information criterion at each step.
+
+* Using olsrr and $p$-value as a selection criterion:
+
+
+```{r, eval=FALSE}
+library(olsrr) # for subset selection
+
+
+wgtModel <- lm(wgt ~ ., data = bdimsData)
+ols_step_forward(wgtModel, details = TRUE)
+```
+
+Using $p$-values as selection criteria, the following  model was selected which included the following 18 predictors added in order: 
+
+wai.gi = wasit girth in centimeters    
+kne.gi = knee girth in centimeters    
+hgt    = height in centimeters     
+thi.gi = thigh girth in centimeters     
+for.gi = forearm girth in centimeters      
+che.gi = chest girth in centimeters      
+cal.gi = calf maximum girl in centimeters     
+hip.gi = hip girth in centimeters       
+kne.di = knee diameter in centimeters    
+age = age in years     
+che.de = chest diameter in centimeters     
+sho.gi = shoulder girth in centimeters  
+sex = sex     
+bii.di = biiliac diameter    
+che.di = chest depth in centimeters    
+elb.di = elbow diameter in centimeters   
+bic.gi = bicep girth in centimeters  
+bit.di = bitrochanteric diameter  
+
+```{r, eval=FALSE}
+
+# the model: 
+lm(formula = wgt ~ wai.gi + kne.gi + hgt + thi.gi + for.gi + 
+     che.gi + cal.gi + hip.gi + kne.di + age + che.de + sho.gi + 
+     sex + bii.di + che.di + elb.di, bic.gi, bit.di,data = bdimsData) 
+```
+
+
+
+
+
+* Using leap and AIC as selection criterion:
+
+First I need to create the basic and full regression models. These models define the most basic and complete regression models for the given dataset. These models will serve as begining and ending states for the stepwise models.
+
+
+```{r}
+    
+basic=lm(wgt~1, data=bdimsData) # basic model which includes only the intercept
+basic
+
+full=lm(wgt~., data=bdimsData) # kitchen sink model with full set of predictors
+full
+
+
+```
+
+```{r, eval=FALSE}
+
+step(basic, scope=list(lower=basic, upper=full), data = bdimsData, direction="forward")
+
+```
+Using AIC as selection criteria, the following  model was selected which included the following 16 predictors added in order:  
+
+I am not going to use this model as we did not go over AIC in class. I simply wanted to show how the two methods woulc arrive at slightly different models. Using AIC, bicep girth in centimeters and bitrochanteric diameter were not included while they were when using $p$-values for selection. 
+
+
+```{r, eval=FALSE}
+The mode: 
+lm(formula = wgt ~ wai.gi + kne.gi + hgt + thi.gi + for.gi + 
+     che.gi + cal.gi + hip.gi + kne.di + age + che.de + sho.gi + 
+     sex + bii.di + che.di + elb.di, data = bdimsData)
+```
+
+
+<br />   
+
+*The next two methods I will show the code for but I will not actually consider their outputs for time purposes.* 
+
+**2. Backwards selection (step down)** 
+
+With backwards selection, the model starts at the full model and searchers through all models between the full and basic models using a backwards selection algorithm to remove predictors at each step while checking the new (simplified) models change in an information criterion at each step.
+
+
+* Using olsrr and $p$-value as a selection criterion:
+
+```{r, eval=FALSE}
+ols_step_backward(wgtModel, details = TRUE)
+```
+
+
+* Using leap and AIC as selection criterion:
+
+```{r, eval=FALSE}
+step(full, data=bdmisData, direction="backward")
+
+```
+
+
+<br />  
+
+**3. Both ways (stepwise)**
+
+* Using olsrr and $p$-value as a selection criterion:
+```{r, eval=FALSE}
+ols_stepwise(wgtModel, details = TRUE)
+```
+
+* Using AIC:
+
+```{r, eval=FALSE}
+step(basic, scope=list(upper=full), data = bdimsData, direction="both")
+```
+
+<br />    
+
+**The model I am going to use is the one resulting from forward selection using $p$-values are selection criteria.** 
+
+Recall the model:
+
+```{r}
+
+# the model: 
+weightMod = lm(formula = wgt ~ wai.gi + kne.gi + hgt + thi.gi + for.gi + 
+               che.gi + cal.gi + hip.gi + kne.di + age + che.de + sho.gi + 
+               sex + bii.di + che.di + elb.di, bic.gi, bit.di,data = bdimsData) 
+
+
+```
+  
+<br />  
+
+**Check assumptions:**
+
+
+* **Linearity:** Lets look at a 18 different scatter plots.  
+
+
+
+```{r, echo=FALSE, fig.width=25, fig.height=40}
+
+library(gridExtra)
+
+p1 <- ggplot(bdimsData, aes(wai.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "wasit girth (in centimeters)", y = "weight (in kilograms)")
+
+p2 <- ggplot(bdimsData, aes(kne.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "knee girth (in centimeters)", y = "weight (in kilograms)") 
+
+p3 <- ggplot(bdimsData, aes(hgt, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "height (in centimeters)", y = "weight (in kilograms)") 
+
+p4 <- ggplot(bdimsData, aes(thi.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "thigh girth (in centimeters)", y = "weight (in kilograms)")
+
+
+p5 <- ggplot(bdimsData, aes(for.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "forearm girth (in centimeters)", y = "weight (in kilograms)")
+
+
+p6 <- ggplot(bdimsData, aes(che.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "chest girth (in centimeters)", y = "weight (in kilograms)")
+
+
+p7 <- ggplot(bdimsData, aes(cal.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "calf girth (in centimeters)", y = "weight (in kilograms)")
+
+
+p8 <- ggplot(bdimsData, aes(hip.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "hip girth (in centimeters)", y = "weight (in kilograms)")
+
+
+p9 <- ggplot(bdimsData, aes(kne.di, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Knee diameter (in centimeters)", y = "weight (in kilograms)")
+
+
+p10 <- ggplot(bdimsData, aes(age, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Age (in years)", y = "weight (in kilograms)")
+
+
+
+p11 <- ggplot(bdimsData, aes(che.de, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Chest diameter (in centimeters)", y = "weight (in kilograms)")
+
+
+p12 <- ggplot(bdimsData, aes(sho.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Shoulder girth (in centimeters)", y = "weight (in kilograms)")
+
+
+#p13 <- ggplot(bdimsData, aes(sex, wgt)) + 
+# geom_point() + 
+#   geom_smooth(method = "lm", colour = "Red", se = F) + 
+#   labs(x = "Sex", y = "weight (in kilograms)")
+# 
+
+p14 <- ggplot(bdimsData, aes(bii.di, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Biiliac diameter (in centimeters)", y = "weight (in kilograms)")
+
+
+p15 <- ggplot(bdimsData, aes(che.di, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Chest depth (in centimeters)", y = "weight (in kilograms)")
+
+
+p16 <- ggplot(bdimsData, aes(elb.di, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Elbow Diameter (in centimeters)", y = "weight (in kilograms)")
+
+
+p17 <- ggplot(bdimsData, aes(bic.gi, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Bicep girth (in centimeters)", y = "weight (in kilograms)")
+
+
+
+p18 <- ggplot(bdimsData, aes(bit.di, wgt)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "Bitrochanteric diameter (in centimeters)", y = "weight (in kilograms)")
+
+
+
+grid.arrange(p1, p2, p3,
+             p4, p5, p6,
+             p7, p8, p9,
+             p10, p11, p12,
+             p14, p15, p16,
+             p17, p18,
+      ncol= 3, nrow = 6)
+
+
+```
+
+They all appear to be appoximately linear.  
+
+
+<br />  
+
+
+* **Nearly Normal Residuals:** The residuals are not exacty normal but quite close. I am going to test this assumption a bit more in depth as the basic histogram makes me sad. 
+
+<br />  
+
+First a ggplot histogram with a fitted normal curve:
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+bdimsData$predicted = round(predict(weightMod),3)
+bdimsData$residuals = round(resid(weightMod),3)
+
+
+weight.errors <- ggplot(bdimsData, aes(residuals)) + 
+  labs(legend.position = "none") + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(bdimsData$residuals, na.rm = TRUE), 
+                            sd = sd(bdimsData$residuals, na.rm = TRUE)), 
+                colour = "black", size = 1) +
+  labs(x="MODEL RESIDUALS", y = "Density")
+
+
+weight.errors
+
+
+```
+
+The distribution of residuals does not appear to be approximately normal.
+
+<br />  
+
+
+Let's look at a a qqplot of the residuals:
+
+```{r, echo=FALSE}
+
+qqWeight.residuals <- qqnorm(bdimsData$residuals,
+                           xlab = "Theoretical Quantiles", 
+                           ylab = "Sample Quantiles RESIDUALS")
+
+qqline(bdimsData$residuals)
+
+```
+
+The residuals are definately not normally distributed. This assumption is violated. Lets just make 100% for sure, though. 
+
+<br />  
+
+Finally, I am going to use a Shapiro-Wilks test to test the null hypothesis that the distribution of residuals is nearly normal. If $p$ > .05, I would reject the null and conclude that the distribution of residuals was significantly different from a normal distribution (in other others, is not normal).
+
+```{r, echo=FALSE}
+
+shapiro.test(bdimsData$residuals)
+
+```
+
+Looks like the Shapiro-Wilks allows me to conclude the distribution is not approximately normal.
+
+
+
+<br />  
+
+* **Constant Variance:**  The variability around the least squares line should be approximately constant. To test this I am going to plot of the predicted and residuals values.
+
+```{r, echo=FALSE}
+scatWeight <- ggplot(bdimsData, aes(predicted, residuals))
+scatWeight + geom_point() + 
+  #geom_smooth()+
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "PREDICTED VALUES (FITTED)", y = "RESIDUALS") 
+
+```
+
+The variance seems approximately constant except for a few points. That being said it there are so few points it is hard to tell whether we have homoscedasticity or not.  
+
+To make sure I will test it with a Breush-Pagan test where the null hypothesis is that there is no different in variance across predicted values (homoscedasticity), and therefore the alternative is that there is a different (hetero). The test statistic is a $x^2$ because it is essentially a chi-sqaured test for independence which looks to see whether the variance of the residuals are independent of the predicted values.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(car)
+ncvTest(weightMod)
+```
+
+Since $p$ < .05 we can reject the null and conclude that constant variance has been violated. 
+
+
+<br />   
+
+* **Independant Observations:** The observations should be independant as I think they were randomly sampled from a population of fit individuals.  
+
+<br />   
+
+
+**In conclusion**, these data do not meet the conditions required for fitting a least squares line. I also mentioned multicollinerity was likley an issue. I could have shown how I could test this in a ways but I did not.
+
+
+Oh lord what do we do now? This model could be perfectly fine for this data and we could use it to draw conclusions about this particular sample. That being said, because we have violated assumptions I cannot generalize any findings beyond this sample. It is possible to transform the raw data and see how this impacts residuals (since we violated constant variance), but a better option might be to do robust regression with boostrapping. I am not going to do a boostrap regression. See boot() within the boot package for easy boostrapping. 
+
+
+
+Let's look at the model's fit to the data:
+
+<br />  
+
+
+**Model-level information:** 
+
+```{r}
+options(scipen = 9999)
+
+summary(weightMod)
+```
+
+<br />  
+
+A forward-selection multiple regression model was built to find the variables which best predicted the weight (in kilograms) of 507 in-shape individua. Eighteen variables were retained in the final model. It appears that  these predictors account for 99.7% of the variation in weights. For these data, $F(15,491) = 11370, p < .001$. Therefore, the regression model is significantly better for predicting the weights of in-shape individuals compared to if we simply used the mean weight for our prediction. Due to the tiny $p$-value, we are more confident that this model is a strong predictor of weight.
+
+<br />   
+
+$B_0$ informs us that is if the values of all of these predicts, the weight of an individual would be -135.63 which does not make sense.  
+
+Interpreting every slope coefficient here would be silly. 
+
+
+
+
+
+
+<br />   
+
+**Aside** 
+
+I know you are likely marking this late into December due to the amount of responsibility put on your shoulders. That being said I wish you and your family a happy chirstmas. Thank you for making the opportunity to learn an exciting and interesting one. 
+
+All the best, NiCK. 

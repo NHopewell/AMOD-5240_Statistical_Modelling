@@ -1,0 +1,535 @@
+---
+title: "AMOD 5240H - Assignment 2"
+author: "Nicholas Hopewell 0496633"
+date: "October 13, 2017"
+output: html_document
+---
+<style>
+
+h1.title {
+  font-size: 42px;
+  color: DarkRed;
+}
+
+</style>
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(pander)
+library(gmodels)
+library(dplyr)
+
+
+```
+
+```{r, echo = FALSE}
+
+set.seed(3456)
+```
+
+
+# {.tabset}
+
+## Section 1: Basic Questions
+
+<br />  
+
+
+**2.16: Normal Distribution**  
+
+<br />   
+
+
+
+```{r, eval=FALSE, echo=FALSE}
+pnorm(-1.13, lower.tail = FALSE)
+
+pnorm(0.18)
+
+options(scipen = 999)
+pnorm(8, lower.tail = FALSE)
+
+
+1 - pnorm(-.5) - (1-pnorm(.5))
+
+
+```
+
+```{r, echo = FALSE, fig.width = 10, fig.height = 2}
+
+normA <- ggplot(data.frame(x = seq(-4, 4, .01)), aes(x = x)) +
+          labs( x = "\n Z > -1.13", y = NULL, title = "(a)") +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_text( x = 0, y = 0.2, size = 3, fontface = "bold",
+                    label = (paste0(signif(pnorm(-1.13, lower.tail = FALSE)*100, 4), "%"))) +
+          scale_x_continuous(breaks = c(-4:4)) +
+          stat_function(fun = dnorm) +
+          stat_function(fun = dnorm, 
+                        xlim = c(-1.13,4),
+                        geom = "area", alpha = 0.3)
+
+ 
+ 
+
+normB <- ggplot(data.frame(x = seq(-4, 4, .01)), aes(x = x)) +
+          labs( x = "\n Z < 0.18", y = NULL, title = "(b)") +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_text( x = 0, y = 0.2, size = 3, fontface = "bold",
+                    label = (paste0(signif(pnorm(0.18)*100, 4), "%"))) +
+          scale_x_continuous(breaks = c(-4:4)) +
+          stat_function(fun = dnorm) +
+          stat_function(fun = dnorm, 
+                        xlim = c(0.18,-4),
+                        geom = "area", alpha = 0.3)
+
+
+
+
+normC <- ggplot(data.frame(x = seq(-4, 4, .01)), aes(x = x)) +
+          labs( x = "\n Z > 8", y = NULL, title = "(c)") +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_text( x = 0, y = 0.2, size = 3, fontface = "bold",
+                    label = (paste0( "< .0001%"))) +
+          scale_x_continuous(breaks = c(-4:4)) +
+          stat_function(fun = dnorm)
+          
+
+
+
+normD <- ggplot(data.frame(x = seq(-4, 4, .01)), aes(x = x)) +
+          labs( x = "\n |Z| < 0.5", y = NULL, title = "(d)") +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_text( x = 0, y = 0.2, size = 3, fontface = "bold",
+                    label = (paste0(signif((1 - pnorm(-.5) - (1-pnorm(.5)))*100, 4), "%"))) +
+          scale_x_continuous(breaks = c(-4:4)) +
+          stat_function(fun = dnorm) +
+          stat_function(fun = dnorm, 
+                        xlim = c(-.5, .5),
+                        geom = "area", alpha = 0.3)
+                        
+                        
+                        
+
+grid.arrange(normA,
+             normB,
+             normC,
+             normD,
+             nrow = 1, ncol = 4)
+
+```
+ 
+
+<br />  
+
+**2.18: Triathlon times, Part I.**  
+
+<br />  
+
+**(a)**
+
+
+Men's distribution = $N(\mu = 4313, \sigma = 583)$
+
+Women's distribution = $N(\mu = 5261, \sigma = 807)$
+
+<br />  
+**(b)**  
+
+$Z_{Leo} = \frac{4948 - 4313}{583} = 1.089$  
+
+Leo's finish time ($x$ = 4948 seconds), is 1.089 standard deviations above the Men's finishing time average ($\mu$ = 4313 seconds).  
+
+
+$Z_{Mary} = \frac{5513 - 5261}{807} = 0.312$  
+Mary's finish time ($x$ = 5513 seconds), is 0.312 standard deviations above the Women's finishing time average ($\mu$ = 5261 seconds).  
+
+<br />  
+**(c)**  
+Both Leo's and Mary's finishing times were longer than their respective group averages but Leo's finishing time was slower relative to the other men aged 30-34 compared to Mary's finishing time relative to the other women aged 25-29. Considering their respective groups, Mary placed at a better rank amongst women triathlon runners than Leo did amongst male triathlon runners.  
+
+<br /> 
+**(d)**  
+
+
+Leo finished faster than `r signif(1 - pnorm(1.089), 4)*100`% of males triathlon runners in the ages 30-34 group.  
+
+```{r, echo = FALSE, fig.width = 2.5, fig.height = 2}
+
+normlEO <- ggplot(data.frame(x = seq(-4, 4, .01)), aes(x = x)) +
+          labs( x = "\n Z > 1.089", y = NULL, title = "Men's Triathlon") +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_text( x = 3, y = 0.1, size = 3, fontface = "bold",
+                    label = (paste0(signif((1 - pnorm(1.089))*100, 4), "%"))) +
+          scale_x_continuous(breaks = c(-4:4)) +
+          stat_function(fun = dnorm) +
+          stat_function(fun = dnorm, 
+                        xlim = c(1.089,4),
+                        geom = "area", alpha = 0.3)
+
+normlEO
+```
+
+<br />  
+
+**(e)**  
+
+Mary finished faster than `r signif(1 - pnorm(0.312), 4)*100`% of women triathlon runners in the ages 25-29 group.  
+
+```{r, echo = FALSE, fig.width = 2.5, fig.height = 2}
+
+normMary <- ggplot(data.frame(x = seq(-4, 4, .01)), aes(x = x)) +
+          labs( x = "\n Z > 0.312", y = NULL, title = "Women's Triathlon") +
+          theme(plot.title = element_text(hjust = 0.5)) +
+          geom_text( x = 2.5, y = 0.2, size = 3, fontface = "bold",
+                    label = (paste0(signif((1 - pnorm(0.312))*100, 4), "%"))) +
+          scale_x_continuous(breaks = c(-4:4)) +
+          stat_function(fun = dnorm) +
+          stat_function(fun = dnorm, 
+                        xlim = c(0.312,4),
+                        geom = "area", alpha = 0.3)
+
+normMary
+```
+
+<br />   
+
+**(f)**  
+
+If the distributions of finishing times for Men and Women triathlon runners were not nearly normally distributed it would not be okay to compare the two based on their respective groups as the transformed distributions would not be standardized normal distributions. It would also not be valid to compute their finish time percentile based on the normal distribution table/calculation.
+
+<br />   
+
+**2.28: Find the SD**
+
+**(a)**  
+15.57  
+
+**(b)**  
+39.04  
+
+<br />  
+
+**2.38: Twitter users and news, Part I**  
+
+0.52 + 2.58*0.024 = 0.582
+0.52 - 2.58*0.024 = 0.458
+
+(0.458, 0.582)  
+
+We are 99% confident that approximately 45.8% to 58.2% of U.S. adult Twitter users get at least some news on Twitter.   
+  
+<br />  
+
+
+**3.2: Young Americans**  
+
+**(a)**  
+True. The success failure condition is not satisfied. In most samples we would expect out point estimate to be near .77, the population proportion. Our point estimate is bound by 0.0 and 1.0. While our point estimates from our samples could be far lower than .77 (as low as 0), they could not be much higher than .77 (as high at 1). Therefore, most samples values would be bunched towards the right end of the distribution, with few values trialing off towards the left end of the distribution (left skewed).
+
+
+**(b)**  
+False. Te sampling distribution is not normally distributed because the number of successess and failures condition is not met.  
+
+Number of young adults who think they can achieve the American dream (successes) = 40 * .77 = 30.8  
+Number of young adults who do not think they can achieve the American dream (failures) = 40 * (1 - .77) = 9.2  
+
+Since we need at least 10 successes and failures and we have less than 10 failures, we cannot say the sampling distriubtion is normally distributed. 
+
+
+**(c)**  
+
+$SE_\hat{p}$ = sqrt(.85*(1-.85)/60) = 0.0461
+
+$Z$ = (.85 - .77) / 0.0461  =  1.735  
+
+False. The point estimate of .85 is only 1.735 SEs away from the mean which would not be considered unusual.
+
+**(d)**  
+
+$SE_\hat{p}$ = sqrt(.85*(1-.85)/120) = 0.0326  
+
+$Z$ = (.85 - .77) / 0.0326  =  2.454  
+
+True. The point estimate of .85 is 2.454 SEs away from the mean, which is often considered unusual.  
+<br />   
+
+**3.8: Elderly Drivers**  
+
+Independence is satisfied (> 10% of population). Success-failure condition is satisfied.  
+
+p = .66
+n = 1018  
+margin of error = 3% .03  using a 95% confidence interval  
+
+**(a)** 
+
+$SE_\hat{p}$ = sqrt(.66*(1-.66)/1018) = 0.01485
+margin of error = 1.96*0.01485 = .029 or 3%
+
+**(b)**
+
+.66 + .03 = .69  
+.66 - .03 = .63
+
+95% CI = (.63, .69 or 63% to 69%)  
+
+We are 95% confident that the true proportion of adults who agree (when this poll was taken) to this claim is between 0.63 and 0.69 (63%-69%).At the time this poll was taken, we can say with high confidence that the percentage of adults who think that licensed drivers should be required to retake the road test once they turn 65 is less than 70%.  
+
+## Section 2(a): Hypothesis Simulation
+
+**3.14: The Civil War**  
+
+A national survey conducted in 2011 among a simple random sample of 1,507 adults shows that 56% of Americans think the Civil War is still relevant.  
+
+$\hat{p}$ = .56  
+$n$ = 1,507  
+
+Both the independence condition (simple random sample) and success/failure condition are satisfied.   
+  
+<br />   
+
+**(a)**  
+
+***H*<sub>O<sub>**: (null hypothesis) The survery data does not provide strong evidence that the majority of Americans think the civil war is still relevant.  
+$p$ = 0.50  
+
+***H*<sub>A<sub>**: (alternative hypothesis) The survey data does provide strong evidence that the majority of Americans think the civil war is still relevant.  
+$p$ > 0.50  
+
+$$
+H_0: p = 0.50  \qquad \text{versus} \qquad H_A: p > 0.50
+$$
+
+<br />  
+
+*Calculations before simulation*  
+
+$SE_\hat{p}$ = sqrt(.56*(1-.56)/1507) = 0.0128  
+$Z$ = (.56 - .50) / sqrt(.56*(1-.56)/1507) = 4.69  
+
+```{r}
+# avoid sci notation
+options(scipen = 999)
+```
+$p$ = pnorm(-abs(4.692319)) = 0.000001350627 or $p$ < .00001
+
+  
+<br />  
+To determine whether the survey provides strong support that the majority of Americans think the Civil War is still relevant, the conditions were simulated 10,000 times to make a conclusion under the assumption of the null hypothesis.
+```{r}
+# Let 1 = those who think the war is relevant, 0 = those who do not
+casesRevo <- c(rep(1, 50), rep(0, 50))
+
+# Simulate 10,000 iterations
+numtRevo <- 10000
+resultRevo <- rep(0, numtRevo)
+```   
+ 
+```{r, echo = FALSE}
+
+for(j in 1:numtRevo) {
+  resultRevo[j] = sum(sample(casesRevo, 1507, replace = TRUE)) / 1507
+}
+
+
+```
+
+
+<br />  
+
+Results of the simulation are plotted in a histogram displayed below. The blue lines represent 2 standard deviations away from the mean (roughly to reject *H<sub>0<sub>* and support the alternative claim that the majority of Americans think the civil war is still relevant), and the red dashed line represents the proportion of American adults who believed that the Civil War is still relevant at the time when the survery was taken.
+```{r, echo= FALSE, fig.width=10}
+
+revoResults = data.frame(resultRevo)
+mRevo = mean(revoResults$resultRevo)
+sdRevo = sd(revoResults$resultRevo)
+
+histRevo <- ggplot(revoResults, aes(resultRevo)) +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y=..density..), colour="black", fill="grey", bins = 17) +
+  labs(x= "Simulated sample proportions under assumption of null")+
+  geom_vline(xintercept = 0.56, colour = "red", linetype = "dotted", size = 1.5)+
+  geom_vline(xintercept = mRevo-(2*sdRevo), colour="blue")+
+  geom_vline(xintercept = mRevo+(2*sdRevo), colour="blue")+
+  stat_function(fun = dnorm,
+                args = list(mean = mean(revoResults$resultRevo, na.rm = TRUE), sd =                        sd(revoResults$resultRevo, na.rm = TRUE)),
+                       colour = "black", size = 1)
+histRevo
+
+``` 
+  
+    
+Based on the simulations, no results were found to be at least as favorable as the proporiton observed as result of the survey.
+```{r}
+sum(resultRevo >= 0.56)
+
+```   
+  
+**(b)**  
+
+In this context, $p$ < .00001 means that if we were to do this survery 10,000 times and the true proporiton of adults who thought the the civil war was still relevant versus the proportion of adults who thought the civil war was not still relevant were equal (50/50), we would observe a proportion at least as favorable as the one found in the original survery less than once every 10,000 surveys. This seems to be true as after simulating these conditions 10,000 times, an observed value of 0.56 or greater was not observed even one time.  
+
+Because the $p$-value is less than .05, we reject *H<sub>0<sub>* and conclude that the survey data does give strong evidence that the majority of Americans think the civil war is still relevant. The fact that the $p$-value is so low relative to the $a$ = 0.05 means that the support for this claim is very strong.  
+
+**(c)** 
+
+```{r}
+# margin of error for 90% CI = 1.65*sqrt(.56*(1-.56)/1507) = 0.0211
+
+# 90% CI = .56 +/- 0.0211
+# .56 + 0.0211 = 0.581
+# .56 - 0.0211 = 0.539
+
+```
+
+The 90% Confidence Interval for our observed value of .56 is (0.539, 0.581). This means that we are 90% confident that the true proportion of Americans who believed the Civil War was still relevant when the survery was conducted was between 0.539 and 0.581. At the time the survey was taken we can say with high confidence that the majority of adults did believe that the Civil War was still relevant because the confidence interval does not contain the null value of 0.50.
+
+
+## Section 2(b): Chi-Square GoF   
+
+**3.40: Evolution vs. Creationism**  
+
+A Gallup Poll released in December 2010 asked 1019 adults living in the Continental U.S. about their belief in the origin of humans. These results, along with results from a more comprehensive poll from 2001 (that we will assume are exactly accurate), are summarized in the table below.   
+
+
+```{r, echo=FALSE}
+evoTable <- matrix(c(387.22, 377.03, 163.04, 122.28, 407.6, 458.55, 61.14, 61.14), byrow = TRUE, ncol = 2)
+
+colnames(evoTable) <- c("2010 (observed)", "2001 (expected)")
+rownames(evoTable) <- c("Humans evolved, with God guiding (1)", "Humans evolved, but God had no part in process (2)", "God created humans in present form (3)", "Other / No opinion (4)")
+# library(gmodels)
+kable(evoTable, format = "latex", booktabs = T, caption = "Table 1: Evolution vs Creationism") 
+```
+
+```{r, echo=FALSE}
+evoTable <- data.frame(
+  Response = c("Humans evolved, with God guiding (1)", "Humans evolved, but God had no part in process                (2)", "God created humans in present form (3)", "Other / No opinion (4)"),
+  Gallup_Poll = c("38%", "16%", "40%", "6%"),
+  Comprehensive_Poll = c("37%", "12%", "45%", "6%")
+)
+
+
+kable(evoTable, booktabs = T, caption = "Table 1: Evolution vs Creationism")
+
+
+```
+<br />   
+
+**(a)**  
+
+Actual number of respondents in 2010:  
+
+
+* (1) 1019 * .38 = 387.22  
+* (2) 1019 * .16 = 163.04  
+* (3) 1019 * .40 = 407.6 
+* (4) 1019 * .06 = 61.14  
+
+
+**(b)**  
+
+***H*<sub>O<sub>**: (null hypothesis) There is no inconsistency between the observed and expected counts. The observed counts from the 2010 Gallop poll follow the same distribution as the expected counts (from the 2001 poll).
+ 
+
+***H*<sub>A<sub>**: (alternative hypothesis) There is an inconsistency between the observed and expected counts. The observed counts from the 2010 Gallop poll do not follow the same distribution as the expected counts (from the 2001 poll).  
+
+$$
+H_0: \text{Observed = Expected}  \qquad \text{versus} \qquad H_A: \text{Observed} \neq \text{Expected}
+$$
+<br />  
+
+
+**(c)**  
+
+Expected number of respondents:  
+
+* (1) 1019 * .37 = 377.03 
+* (2) 1019 * .12 = 122.28  
+* (3) 1019 * .45 = 458.55 
+* (4) 1019 * .06 = 61.14  
+  
+  
+**(d)**   
+
+ (387.22 - 377.03)^2 / 377.03 = 0.2754054  
+ (163.04 - 122.28)^2 / 122.28 = 13.58667  
+ (407.6 - 458.55)^2 / 458.55 = 5.661111  
+ (61.14 - 61.14)^2 / 61.14 = 0  
+
+$\chi^2$ = 19.52319  
+
+<br />   
+
+
+```{r, echo= FALSE}
+evoTwo <- data.frame(
+  Observed = c(387.22, 163.04, 407.6, 61.14, " "),
+  Expected = c(377.03, 122.28, 458.55, 61.14, " "),
+  Chi_Calculation = c(0.28, 13.59, 5.66, 0, "sum = 19.52")
+)
+
+
+kable(evoTwo, booktabs = T, caption = "Table 2: Chi-Square table")
+```
+<br />    
+  
+
+All conditions for a chi-square goodness of fit, which include independence of cases, at least 5 expected cases in each cell, and degrees of freedom greater than 1, are met. 
+```{r}
+
+pchisq(q = 19.52319, df = 3, lower.tail = FALSE)
+
+```
+
+
+<br />  
+
+Considering poll data take from adults living in the continental U.S., a chi-square goodness of fit was conducted to determine whether or not beliefs about the origins of humans have changed or stayed the same between 2001 and 2010. Results provide strong evidence that the distribution of responses in 2010 do not fit the  distribution of responses from 2001, *p* = `r round(pchisq(q = 19.52319, df = 3, lower.tail = FALSE), 4)`. Thus, the data suggests that beliefs about the origins of humans has changed with the passage of years.
+  
+  
+## Section 2(c): Chi-Square Tf I  
+
+
+**3.44: Shipping holiday gifts**  
+
+A December 2010 survery asked 500 randomly sampled Los Angeles residents which shipping carrier they prefer to use for shipping holiday gifts. The table below shows the distribution of responses by age group as well as the expected counts for each cell (shown in parentheses).  
+
+```{r, echo = FALSE}
+
+shipTable <- data.frame(
+  Shipping_Method = c("USPS", "UPS", "FedEx", "Something else", "Not Sure", "Total"),
+  'Age_18_to_34' = c("72  (81)", "52 (53)", "31 (21)", "7 (5)", "3 (5)", "165  "),
+  'Age_35_to_54' = c("97 (102)", "76 (68)", "24, (27)", "6 (7)", "6 (5)", "209  "), 
+  'Age_55_and_older' = c("76 (62)", "34 (41)", "9 (16)", "3 (4)", "4 (3)", "126  "),
+  Total = c(245, 162, 64, 16, 13, 500)
+)
+
+kable(shipTable, caption = "Table 3: Shipping holiday gifts")
+
+
+
+```
+
+<br />  
+
+**(a)**  
+
+***H*<sub>O<sub>**: (null hypothesis) Age and preferred shipping method for holiday gifts among Los Angeles residents are independent. Preferred shipping method does not vary by age. 
+ 
+
+***H*<sub>A<sub>**: (alternative hypothesis) Age and preferred shipping method for holiday gifts among Los Angeles residents are dependent. Preferred shipping method does vary by age. 
+ 
+
+$$
+H_0: \text{Shipping Method + Age -> independent}  \qquad \text{versus} \qquad H_A: \text{Shipping Method + Age -> dependent} 
+$$ 
+<br />  
+
+**(b)**  
+
+Conditions for inference using a chi-square test are not satisfied. Each particular scenario (i.e. cell count) does not have at least 5 expected cases. Two cells in the 55+ age column have less than 5 expected cases, thus, it is inappropriate to make inferences based on a chi-square test for independence. 
+

@@ -1,0 +1,793 @@
+---
+title: "Take Home Final Exam"
+author: "Nicholas Hopewell"
+date: "December 18, 2017"
+output:
+  html_document: default
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## 1. Data organization
+<br />  
+
+First I will read in the data file, look at the first 10 rows, and look how the variables were classed.  
+
+I am not going to hide anything as you probably need to see everything for the exam to be graded. 
+
+```{r, warning=FALSE, message=FALSE}
+
+library(tidyr)
+library(dplyr)
+library(magrittr)
+library(ggplot2)
+library(plyr)
+library(olsrr)
+library(MASS)
+```
+
+```{r}
+census <- read.table("https://www.openintro.org/stat/data/cc.txt", header = TRUE, stringsAsFactors = FALSE)
+
+head(census, 5)
+
+str(census)
+```
+<br />  
+
+
+Now I need to fix the FIPS column to add a 0 infront of the first 9 states because they are encoded inccorectly.
+
+```{r}
+
+# this is encoded totally wrong for states that range from 1 - 9
+# need to add a 0 infront of any value of FIPS that is less than 5 digits
+FIPS_correct <- sprintf("%05d",census$FIPS)
+# combine by columns
+census_fixed <- cbind(FIPS_correct, census)
+```
+<br />  
+
+
+Now I will make a new column for each state based on the first 2 digits of the FIPS column.  
+
+Then I will make a new dataframe based off the fixed dataframe where I have grouped by the new state column and summaried the populations for each state in 2000 and 2010 as a sum.
+```{r}
+# save state as first two digits of correct FIPS column
+census_fixed <- transform(census_fixed, State = substr(FIPS_correct, 1, 2))
+
+
+# of the fixed dataframe, group by state and summarize pop2000 and pop2010 as a sum saving results in a new data frame
+census_pops <- census_fixed %>% 
+  group_by(State) %>% 
+  dplyr::summarise(sum2000 = sum(pop2000),
+                   sum2010 = sum(pop2010))
+
+# look at new dataframe
+head(census_pops, 10)
+```
+<br />   
+
+
+Now I will look at a 51 element vector of the proportion of the total US population in the year 2000 each state makes up and verify that this equals 1 (100% of the US population).
+```{r}
+# save sum of population of US states in 2000
+USpop2000 <- sum(census_pops$sum2000)
+
+# verify values sum to 1
+sum(print(census_pops$sum2000 / USpop2000))
+
+
+```
+<br />   
+
+
+Next, I will look at a 51 element vector of the proportion of the total US population in the year 2010 each state makes up and verify that this equals 1 (100% of the US population).
+```{r}
+# save sum of population of US states in 2010
+USpop2010 <- sum(census_pops$sum2010)
+
+# verify values sum to 1
+sum(print(census_pops$sum2010 / USpop2010))
+```
+<br />   
+
+
+Now I will add a new column, naming the factor levels of state with the actual name of the state. I will contenate this by columns.
+```{r}
+census_pops_named = revalue(census_pops$State, c("01" = "Alabama", "02" = "Alaska", 
+                                                 "04" = "Arizona", "05" = "Arkansas", 
+                                                 "06" = "California", "08" = "Colorado", 
+                                                 "09" = "Connecticut", "10" = "Delaware", 
+                                                 "11" = "D of Col", "12" = "Florida", 
+                                                 "13" = "Georgia",  "15" = "Hawaii", 
+                                                 "16" = "Idaho", "17" = "Illinois", 
+                                                 "18" = "Indiana", "19" = "Iowa", 
+                                                 "20" = "Kansas", "21" = "Kentucky", 
+                                                 "22" = "Louisiana", "23" = "Maine", 
+                                                 "24" = "Maryland", "25" = "Mass", 
+                                                 "26" = "Michigan", "27" = "Minnesota", 
+                                                 "28" = "Mississippi", "29" = "Missouri", 
+                                                 "30" = "Montana", "31" = "Nebraska", 
+                                                 "32" = "Nevada", "33" = "New Hampshire", 
+                                                 "34" = "New Jersey", "35" = "New Mexico", 
+                                                 "36" = "New York", "37" = "N Carolina", 
+                                                 "38" = "N Dakota", "39" = "Ohio", 
+                                                 "40" = "Oklahoma", "41" = "Oregon", 
+                                                 "42" = "Pennsylvania", "44"= "Rhode Island",
+                                                 "45" = "S Carolina", "46" = "S Dakota", 
+                                                 "47" = "Tennessee", "48" = "Texas", 
+                                                 "49" = "Utah", "50" = "Vermont", 
+                                                 "51" = "Virginia", "53" = "Washington", 
+                                                 "54" = "W Virginia", "55" = "Wisconsin",
+                                                 "56" = "Wyoming"))
+
+# concatenate by columns
+census_final <- cbind(census_pops_named, census_pops)
+```
+<br />   
+
+
+Check to see it if worked out:
+```{r}
+
+
+head(census_final, 5)
+```
+<br />   
+
+
+Now, I will make barplots of the populations of each state in 2000 and 2010.  
+
+Make sure to read the Y-axis to make sense of it. It was very messy without me altering it this way.
+```{r, fig.width=14, fig.height=8}
+
+b1 <- barplot(census_final$sum2000/100000,
+          main = "US State Populations, 2000",
+          ylab = "Population in Hundreds of Thousands",
+          xlab = "",
+          names.arg = unique(census_final$census_pops_named), las=2)
+        
+
+b2 <- barplot(census_final$sum2010/100000,
+          main = "US State Populations, 2010",
+          ylab = "Population in Hundreds of Thousands",
+          xlab = "",
+          names.arg = unique(census_final$census_pops_named), las=2)
+
+```
+
+<br />  
+
+## 2. Hypothesis Test  
+ 
+
+<br />    
+
+  
+***H*<sub>O<sub>**: (null hypothesis) The state of Florida **does not have more** retirees than the US average. The amount of retirees in Florida are roughly equal to the average amount of retires across the US 
+
+***H*<sub>A<sub>**: (alternative hypothesis)  The state of Florida **has more** retirees than the US average. 
+
+<br />  
+
+First I will find the average percentage of US residents who are over the age of 65:
+
+```{r}
+
+mean(census_fixed$age_over_65)
+
+sd(census_fixed$age_over_65)
+```
+<br />  
+
+Next, I will get the average percent of residents of each state who are over the age of 65:
+```{r}
+  
+retirement_pops <- census_fixed %>%
+  group_by(State) %>% 
+  dplyr::summarise(retired = mean(age_over_65))
+
+retirement_pops
+```
+As seen above,  
+
+* The average proportion of the American population who are over the age of 65 is 15.829% with a standard deviation of 4.149 
+* The proportion of the Florida (State = 12) population who are over the age of 65 is 18.075%   
+
+<br />    
+
+The hypotheses for the Null significance test are:
+
+$$
+H_0: P_{Florida} = P_{USA} \qquad \text{versus} \qquad H_A: P_{Florida} >  P_{USA} 
+$$
+
+
+<br />  
+
+In this case, the alternative hypothesis is that the proportion of retires in Florida is **greater** than the proportion of retires in the US in general. Therefore, I will use a one-sided hypothesis test.
+
+
+$Z = \frac{18.075 - 15.829}{4.149}$ = 14.25986
+
+One-sided $P$-value = pnorm(-abs(14.25986)) = < .000001
+
+
+This $p$-value is less than 0.05 thus we reject the null hypothesis and conclude that the proportion of retires in Florida is greater than the avergae proportion of retires across the US. Given the incredibly small $p$-value, we are more confident that these results reflect a true difference.  
+
+<br /> 
+
+
+## Goodness of fit   
+
+<br />   
+
+**NOTE** I know I emailed you about this question and said I think I figured it out. I am not sure that I did. I tried many ways to convert these to counts instead of proportions but it never made sense. The part that confused me was the "use the distribution of the population across the states" - which I took as to use the exact distribution comptuted in question 1 because it had the exact same wording.  I know we always did chi-squared with counts but I kept getting very large values when I converted to counts. I do understand exactly what the test does and why it is used I think I just confused myself here perhaps.  
+
+<br />   
+
+
+
+***H*<sub>O<sub>**: (null hypothesis) There is no inconsistency between the observed and expected counts. The distribution of children and teenagers is the same as the distribution of the general population 
+
+***H*<sub>A<sub>**: (alternative hypothesis)  There is an inconsistency between the observed and expected counts. The distribution of children and teenagers is not the same as the distribution of the general population.  
+
+Any large deviations from what would be expected based on sampling variation (chance alone) provides strong evidence in support of the alternative hypothesis.
+
+<br />   
+
+
+$$\chi^2 = \sum_{i = 1}^{k}\frac{(0 - E)^2}{E}$$ 
+
+<br />  
+
+Recall the population distribution of the general population.These will be the **expected values**:  
+
+
+```{r}
+# save sum of population of US states in 2010
+USpop2010 <- sum(census_pops$sum2010)
+
+# verify values sum to 1
+print(census_pops$sum2010 / USpop2010)
+```
+
+<br />   
+
+Next, I need to get the **observed values** to compare
+```{r}
+eighteen_under <- census_fixed %>%
+                    group_by(State) %>% 
+                    dplyr::summarise(sum18 = sum(age_under_18))
+
+```
+
+```{r}
+# save sum of population of US states in 2010
+eighteen_under2010 <- sum(eighteen_under$sum18)
+
+# verify values sum to 1
+print(eighteen_under$sum18 / eighteen_under2010)
+```
+
+<br />
+
+
+
+Next, I will concatenate them into a list, combining by columns, and then convert to a data frame for element application when I compute the values needed to acheve the $\chi^2$ test statistic.
+```{r}
+# store general population distribution
+Genpop <- census_pops$sum2010 / USpop2010
+
+#store under 18 population distribution
+pop18 <- eighteen_under$sum18 / eighteen_under2010
+
+# combine by columns into a list
+goodness_table <- cbind(pop18, Genpop)
+# convert to a data frame
+goodness_table <- as.data.frame(goodness_table)
+
+# check the frame
+head(goodness_table, 5)
+
+```
+<br />  
+
+Mutate table with new column for the values used to get the $\chi^2$ test statistic:
+
+New column = $\frac{(0 - E)^2}{E}$ 
+```{r}
+
+goodness_table <- goodness_table %>%
+                    mutate(Chi_vals = (pop18 - Genpop)^2 / Genpop)
+
+
+head(goodness_table, 5)
+  
+```
+<br />  
+
+
+To get the $\chi^2$ value:  
+
+```{r}
+# verify values sum to 1
+sum(goodness_table$Chi_vals)
+```
+<br />  
+
+To determine the significance of this test statistic, I need to determine the degrees of freedom 
+
+$df = k - 1 \qquad df = 51 -1 = 50$    
+
+<br />  
+
+Determine significance:
+
+```{r}
+pchisq(q = 0.9432312, df = 50, lower.tail = FALSE)
+```
+<br />  
+
+The $p$-value is not significant at a 0.05 level therefore we fail to reject $H_0$ and conclude that there is no inconsistency between the observed and expected counts. The distribution of children and teenagers is the same as the distribution of the general population.  
+
+<br />  
+
+**Checking Assumptions**  
+
+1. Independence is met because each case that contributes to the counts (in this case proportions) is independent of other cases.  
+2. Sample size. There should be at least 5 expected cases for each cell. If these were converted to counts then there would be a lot more than 5 expected counts for each cell.  
+3. The degrees of freedom are greater than 1.   
+
+<br />  
+
+## Linear Regression 
+
+<br />  
+
+I will hide the vast majority of the output.  
+
+First, I will chose the variables in the model with forward selection stepwise. No more predictors will be added into the model when the adjusted R-squared fails to improve by doing so. 
+
+```{r, eval = FALSE, message=FALSE}
+
+census_Reg <- census[,-2] # get rid of the FIPS column as it is just an ID
+
+# predict home ownership will all variables are predictors
+ownership_model <- lm(home_ownership ~ ., data = census_Reg )
+# use forward stepwise for variable selection.
+ols_step_forward(ownership_model, details = TRUE)
+```
+<br />   
+
+Using Adjusted R-squared,the following predictors were retained in the model for predicting home ownership, adding predictors in the following order using forward selection: 
+
+1. housing_multi_unit  
+2. poverty  
+3. no_move_in_one_plus_year   
+4. white_not_hispanic  
+5. mean_work_travel  
+6. foreign_spoken_at_home  
+7. black  
+8. hs_grad  
+9. persons_per_household  
+10. age_over_65
+11. median_val_owner_occupied  
+12. bachelors  
+13. female  
+14. hispanic  
+15. density  
+16. age_under_18  
+17. age_udner_5  
+18. foreign_born  
+19. per_capita_incom  
+20. growth  
+21. sales_per_capita  
+
+Here is another way to set this up using AIC and step function
+```{r}
+
+
+#basicModel<-lm(home_ownership ~ 1, data = census_Reg) 
+
+#forwardModel <- stepAIC(basicModel,
+#                        scope=list(lower= ~1,upper = ~ .), direction="forward")
+
+
+```
+
+```{r}
+
+# the model: 
+ownership_model = lm(formula = home_ownership ~ housing_multi_unit + poverty + 
+                       no_move_in_one_plus_year + white_not_hispanic + mean_work_travel +
+                       foreign_spoken_at_home + black + hs_grad + persons_per_household + 
+                       age_over_65 + median_val_owner_occupied + bachelors + female +
+                       hispanic + density + age_under_18 + age_under_5 + foreign_born + 
+                       per_capita_income + growth + sales_per_capita, data = census)
+```
+
+
+**Check assumptions:**  
+
+
+* **Linearity:** Looking at 21 scatterplots 
+
+```{r, echo=FALSE, fig.width=25, fig.height=40, warning=FALSE, message=FALSE}
+
+library(gridExtra)
+
+p1 <- ggplot(census, aes(housing_multi_unit, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "housing_multi_unit", y = "home_ownership")
+
+p2 <- ggplot(census, aes(poverty, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "poverty", y = "home_ownership")
+
+
+p3 <- ggplot(census, aes(no_move_in_one_plus_year, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "no_move_in_one_plus_year", y = "home_ownership")
+
+
+p4 <- ggplot(census, aes(white_not_hispanic, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "white_not_hispanic", y = "home_ownership")
+
+
+p5 <- ggplot(census, aes(mean_work_travel, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "mean_work_travel", y = "home_ownership")
+
+
+p6 <- ggplot(census, aes(foreign_spoken_at_home, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "foreign_spoken_at_home", y = "home_ownership")
+
+
+p7 <- ggplot(census, aes(black, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "black", y = "home_ownership")
+
+
+p8 <- ggplot(census, aes(hs_grad, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "hs_grad", y = "home_ownership")
+
+
+p9 <- ggplot(census, aes(persons_per_household, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "persons_per_household", y = "home_ownership")
+
+p10 <- ggplot(census, aes(age_over_65, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "age_over_65", y = "home_ownership")
+
+
+p11 <- ggplot(census, aes(median_val_owner_occupied, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "median_val_owner_occupied", y = "home_ownership")
+
+
+p12 <- ggplot(census, aes(bachelors, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "bachelors", y = "home_ownership")
+
+
+p13 <- ggplot(census, aes(female, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "female", y = "home_ownership")
+
+
+p14 <- ggplot(census, aes(hispanic, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "hispanic", y = "home_ownership") 
+
+
+p15 <- ggplot(census, aes(density, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "density", y = "home_ownership")
+
+
+
+p16 <- ggplot(census, aes(age_under_18, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "age_under_18", y = "home_ownership")
+
+
+
+p17 <- ggplot(census, aes(age_under_5, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "age_under_5", y = "home_ownership")  
+
+
+p18 <- ggplot(census, aes(foreign_born, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "foreign_born", y = "home_ownership")  
+
+
+p19 <- ggplot(census, aes(per_capita_income, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "per_capita_income", y = "home_ownership")  
+
+
+p20 <- ggplot(census, aes(growth, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "growth", y = "home_ownership")
+
+
+p21 <- ggplot(census, aes(sales_per_capita, home_ownership)) + 
+geom_point() + 
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "sales_per_capita", y = "home_ownership")
+
+
+
+grid.arrange(p1, p2, p3,
+             p4, p5, p6,
+             p7, p8, p9,
+             p10, p11, p12,
+             p14, p15, p16,
+             p17, p18, p19,
+             p20, p21,
+      ncol= 3, nrow = 7)
+
+
+```
+
+They all appear to be appoximately linear.  
+
+
+<br />  
+
+
+* **Nearly Normal Residuals:**
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+census$predicted = round(predict(ownership_model),3)
+census$residuals = round(resid(ownership_model),3)
+
+
+ownership.errors <- ggplot(census, aes(residuals)) + 
+  labs(legend.position = "none") + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(census$residuals, na.rm = TRUE), 
+                            sd = sd(census$residuals, na.rm = TRUE)), 
+                colour = "black", size = 1) +
+  labs(x="MODEL RESIDUALS", y = "Density")
+
+
+ownership.errors
+```
+<br />  
+
+Let's look at a a qqplot of the residuals:
+
+```{r, echo=FALSE}
+
+qqWeight.residuals <- qqnorm(census$residuals,
+                           xlab = "Theoretical Quantiles", 
+                           ylab = "Sample Quantiles RESIDUALS")
+
+qqline(census$residuals)
+
+```
+
+
+These residuals do not appear to be normally distributed. I could use a robust regression model but for the sake of time I am just going to remove these as there are only a couple outliers in the entire set.   
+
+```{r}
+
+census$residuals<-ifelse(census$residuals < -18.307, NA, census$residuals)
+
+
+qqWeight.residuals <- qqnorm(census$residuals,
+                           xlab = "Theoretical Quantiles", 
+                           ylab = "Sample Quantiles RESIDUALS")
+
+qqline(census$residuals)
+
+```
+<br />  
+
+Still not normally distristributed but much closer.  
+
+
+<br />  
+
+* **Constant Variance:**  The variability around the least squares line should be approximately constant. To test this I am going to plot of the predicted and residuals values.
+
+```{r, echo=FALSE, warning=FALSE}
+scat_ownership <- ggplot(census, aes(predicted, residuals))
+scat_ownership + geom_point() + 
+  #geom_smooth()+
+  geom_smooth(method = "lm", colour = "Red", se = F) + 
+  labs(x = "PREDICTED VALUES (FITTED)", y = "RESIDUALS") 
+
+```
+  
+  The variance seems approximately constant for the majority of the data points. In some areas it looks like it is fanning out but there are so few data points in those areas that it is hard to tell.  
+
+
+<br />   
+
+* **Independant Observations:** The observations  are independant as the data comes from a random sample of 500 observations which is less than 10% of the US population.  
+
+<br />  
+
+**In conclusion**, these data do not meet the conditions required for fitting a least squares line due to residuals not being normally distributed. We can fit the model to the data but should not infer to the greater population.   
+
+<br />   
+
+**Model-level information:** 
+
+```{r}
+options(scipen = 9999)
+
+summary(ownership_model)
+
+```
+
+A forward-selection multiple regression model was built to find the variables which best predicted home ownership. Twenty-one variables were retained in the model;  these predictors account for approximately 76% of the variation in home ownership. For these data, $F(21,3061) = 469.7, p < .00001$. Therefore, the full regression model with all the determined predictors is significantly better for predicting home ownerships  compared to if we simply used a basic model with only the intercept. In other words, the fit of the full model is significantly better than the fit of the basic model.  
+
+<br />   
+
+
+## Logistic Regression  
+
+
+<br />  
+
+
+First, I need to determine which states are affluent in terms of whether or not they have less than or more than 10% of the state below the poverty line.  
+<br />  
+
+I will aggetate across states with consideration to sum and average where appropriate. States with less than 10% of their population under the poverty line (using poverty variable) will get a value of 1 in the new 'affluent' column; those with more than 10% below the poverty line will get a 0. 
+
+```{r}
+logi_data <- census_fixed%>%
+              group_by(State) %>% 
+              dplyr::summarise(growth_agg = mean(growth),
+                               pop2010_agg = sum(pop2010),
+                               pop2000_agg = sum(pop2000),
+                               age_under_5_agg = mean(age_under_5),
+                               age_under_18_agg = mean(age_under_18),
+                               age_over_65_agg = mean(age_over_65),
+                               female_agg = mean(female),
+                               black_agg = mean(black), 
+                               hispanic_agg = mean(hispanic),
+                               white_not_hispanic_agg = mean(white_not_hispanic),
+                               no_move_in_one_plus_year_agg = mean(no_move_in_one_plus_year),
+                               foreign_born_agg = mean(foreign_born),
+                               foreign_spoken_at_home_agg = mean(foreign_spoken_at_home), 
+                               hs_grad_agg = mean(hs_grad), 
+                               bachelors_agg = mean(bachelors), 
+                               mean_work_travel_agg = mean(mean_work_travel), 
+                               home_ownership_agg = mean(home_ownership), 
+                               housing_multi_unit_agg = mean(housing_multi_unit), 
+                               median_val_owner_occupied_agg = mean(median_val_owner_occupied),
+                               persons_per_household_agg = mean(persons_per_household),
+                               per_capita_income_agg = mean(per_capita_income), 
+                               sales_per_capita_agg = sum(sales_per_capita), 
+                               density_agg = mean(density),
+                               state_poverty = mean(poverty)) %>%
+              mutate(affluent = ifelse(state_poverty < 10, 1,0))   # this is the target column including 1 for affluent and 0 for not
+
+
+
+
+head(logi_data[, c(1, 25:26)], 10)  # Look at the state, state_poverty, and affluent columns in the new dataset
+
+
+
+```
+
+<br />  
+
+See how many affluent states there are:
+
+```{r}
+length(which(logi_data$affluent == 1))
+```
+
+Looks like only 7 states have less than 10% of their population living below the poverty line.  
+
+
+<br />  
+
+Now I will do forward selection to determine the variables suitable for predicting which states are affluent.  
+
+First I will drop the state column and the poverty column. It is important to **drop the poverty column because it contains the information used to created the affluent column**. This is not only a redundant duplication of information, it also does not lend to a valid regression model. 
+
+```{r}
+# drop state and poverty from analysis
+
+logi_data <- logi_data[,-c(1, 25)]
+
+```
+<br />  
+
+Using backwards deletion, I will hid all the output. The olsrr package used for linear regression does not work with glm's:
+
+```{r, eval = FALSE, warning=FALSE}
+fullModel = glm(affluent ~ .,family=binomial, data = logi_data) # all predictors '~ .'
+basicModel = glm(affluent ~1, family = binomial, data = logi_data) # only intercept '~ 1'
+
+backwardsModel = step(fullModel) # backwards is the default direction
+```
+<br />   
+
+R threw a warning saying one or more of the predictors prefectly predicted the 1s and 0s of the affluent target variable. Since I had the forsight to remove the poverty column for exactly this reason, some of the predictors much just be too good at splitting states into affluent and not affluent. I imagine income per capital or something similar perhaps. As long as I identify this error and know what it means I can move on. In other circumstances I would explore this.  
+<br />  
+
+The final model arrived at with backwards deletion:
+
+```{r, warning=FALSE}
+
+affluent_model_backwards = glm(affluent ~ mean_work_travel_agg + median_val_owner_occupied_agg + 
+                                per_capita_income_agg + density_agg, family = binomial, data = logi_data)
+
+```
+<br />   
+
+Now trying forward selection. Again I will hide all the output.
+
+```{r, eval = FALSE, warning=FALSE}
+
+fullmod <- glm(affluent ~.,family=binomial, data =logi_data)
+nothing <- glm(affluent ~ 1,family=binomial, data = logi_data)
+
+forwards = step(nothing,
+scope=list(lower=formula(nothing),upper=formula(fullmod)), direction="forward")
+
+```
+<br />  
+
+The final model arrived at with forward selection:
+```{r, warning=FALSE}
+affluent_model_forwards = glm(formula = affluent ~ per_capita_income_agg + density_agg + 
+                                        housing_multi_unit_agg, family = binomial, data = logi_data)
+```
+
+<br />  
+
+I will use the backwards model.
+```{r, warning = FALSE}
+summary(affluent_model_backwards)
+```
+As seen above, it hit its max number of iterations without converging. This is because of one or more of the variables perfectly predicting the affluent column values. As I know what the error says but I am not allowed to research it on stack overflow or online I am not sure how to fix it as I have not encountered this problem before. It is probably quite straight forward but I do not want to find an answer online and make it obvious that I was searching for answers I did not know. 
+
+I believe I did all the set up correctly in the least amount of code I could. I think learning how to use dplyr was incredibly helpful for this so I am glad we had a chance to use data camp. In addition, the problem is set up as a logistic regression problem with affluent being categorical (1s and 0s) I just do not know how to find the error without searching on stack overflow. I tried not including some variables I thought might be causing the issue but it did not fix anything. The data frame was also generated correctly, the variables were aggetated correctly as sums and averages. I have done logistic regression in the past and it has worked out fine, perhaps I made a small error somewhere.  
+
+
+The odds ratio of a state being considered affluent for an additional minute of mean travel time to work is exp(23.909129) = 3.174  
+The odds ratio of a state being considered affluence for an additional thousand dollars of per capita income is exp(0.101571) = -2.287

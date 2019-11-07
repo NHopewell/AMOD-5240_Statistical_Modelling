@@ -1,0 +1,375 @@
+---
+title: "AMOD 5240H - Assignment 1"
+author: "Nicholas Hopewell 0496633"
+date: "October 2, 2017"
+output: html_document
+---
+<style>
+
+h1.title {
+  font-size: 42px;
+  color: DarkRed;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(gridExtra)
+library(kableExtra)
+library(psych)
+library(gmodels)
+library(knitr)
+library(dplyr)
+
+```
+
+
+```{r, echo = FALSE}
+set.seed(89)
+```
+# {.tabset}
+
+## Section 1: Basic Questions
+<br />  
+
+
+
+**1.26: Parameters and statistics**
+
+**(a)** Sample mean = 6.25 (hours of sleep per night).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Population mean = 5.5 (hours of sleep per night).  
+    
+    
+**(b)** Sample mean = 58 ($ spent on Halloween per household).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Population mean = 52 ($ spent on Halloween per household).  
+    
+    
+**(C)** Sample mean = 3.59 (student GPA).  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Population mean = 3.37 (student GPA).  
+<br />  
+
+**1.34: Means and SDs**
+
+**(a)**  
+
+$$
+\begin{split}
+3,5,5,5,8,11,11,11,13  \\
+3,5,5,5,8,11,11,11,20  \\
+\end{split}
+$$
+For these sets of values, both the mean and standard deviation values of the first set will be lower than that of the second set. This has to be with the highest value in the second set (20) pulling the mean to a higher value and inflating the average spread of the values, in other words, increasing standard deviation.  
+<br />  
+
+
+Calculated values for (a) and put them into a table for practice:
+
+```{r, echo= FALSE}
+
+# Although we do not need to calculate mean and sd I am going to for practice.
+valuesA <- data.frame(c(3,5,5,5,8,11,11,11,13), c(3,5,5,5,8,11,11,11,20))
+colnames(valuesA) <- c("a1", "a2")
+
+#library(knitr)
+#library(psych)
+tb <- round(describe(valuesA, skew = F, IQR = F, ranges = F), 2)
+kable(tb, "html") %>%
+      kable_styling(bootstrap_options = "striped", full_width = F, position = "left") 
+# yes, there are easier ways to do this.
+
+```
+
+<br />  
+
+
+Made a dot plot of question (a) for practice:
+<br /> 
+
+```{r, echo= FALSE, fig.width= 10, fig.height=4}
+# Visualized one for practice:
+
+aOne<- ggplot(valuesA, aes(x = a1)) + 
+  geom_dotplot(color = 'red', method = 'histodot', 
+               binwidth = 1, dotsize = 1, stackratio = 1.2) +
+  scale_y_continuous(NULL, 
+                     breaks = NULL) +
+  scale_x_continuous(breaks = c(2:14),
+                     limits = c(2,14))
+
+
+aTwo<- ggplot(valuesA, aes(x = a2)) + 
+  geom_dotplot(color = 'red', method = 'histodot', 
+               binwidth = 1, dotsize = 1.7, stackratio = 1.2) +
+  scale_y_continuous(NULL, 
+                     breaks = NULL) +
+  scale_x_continuous(breaks = c(2:21),
+                     limits = c(2,21))
+
+
+# library(gridExtra):
+# fig.width set to 10 to fill screen
+
+grid.arrange(aOne, 
+             aTwo,
+             nrow=1, ncol = 2)
+
+
+```
+
+
+<br />   
+
+
+**(b)** 
+
+$$
+\begin{split}
+-20,0,0,0,15,25,30,30  \\
+-40,0,0,0,15,25,30,30  \\
+\end{split}
+$$
+
+For these sets of values, the mean of the second set will be lower because it is being pulled down by the greater lower value (-40 vs. -20). The standard deviation of the second set will be higher because the average spread of the data has increased by adding a value much futher from its mean than that of the first set (-40 much further from its mean than -20, thus increasing sd).  
+<br />   
+
+**(c)** 
+$$
+\begin{split}
+0,2,4,6,8,10  \\
+20,22,24,26,28,30  \\
+\end{split}
+$$
+For these sets of vales, the mean of the second set will be larger because the values in the set are all larger but the standard deviations of the sets will be exactly the same because the average spread of the data in both sets is equal.  
+  
+<br />  
+
+**(d)**
+$$
+\begin{split}
+100,200,300,400,500  \\
+0,50,300,550,600  \\
+\end{split}
+$$
+For these sets of values the means will be the same as the data is centered around the same average value, but the standard deviation of the second set of values will be larger because the average spread of the data in the second set is larger (same # of values but range is much larger therefore average spread is greater). 
+
+<br />    
+
+**1.36: Infant Mortality**
+
+**(a)**  
+Q1 would be around 6  
+
+The median around 17 to 18  
+
+Q3 would be around 46 to 49   
+
+**(b)**  
+The mean of this data set would be larger than the median because it is not as robust as the median. Since the distribution is positively skewed the mean is being pulled up by the values tailing off towards the upper end of the distribution. The median is barely influenced by this skew as it is simply the middle value when the data is ordered smallest to largest. 
+
+<br />  
+
+**1.38: Air Quality**  
+
+**(a)**  
+Estimated median is around 28
+
+**(b)**  
+I would expect the mean AQI to be larger than the median AQI because the distribution is slightly positively skewed, pulling the mean to a larger value. Because the mean is a measure of the center of the data, these scores in the right end of the distribution will increase the value of the mean.
+
+
+**(c)**  
+Q1 is around 18  
+
+Q3 is around 42  
+
+IQR = Q3 - Q1, or 42 - 18 = 24
+
+     
+## Section 2: Simulation Question 1
+
+**2.4: Sinusitis and antibiotics**<br />   
+
+ 
+Researchers randomly assigned 166 total participants diagnosed with acute sinusitis to either treatment or control groups. 85 participants assigned to the antibiotic group received a 10-day course of anti-biotics. 81 participants assigned to the placebo group received symptomatic treatments in the form of placebo pills which looked and tasted exactly like the antibiotic. At the conclusion of the 10-day trial, patients reported whether or not they felt their symptoms had improved since the beginning of the study.  
+
+If whether or not a participant received antibiotics had no significant impact on symptom improvement, we would expect treatment type to be *independent* of self-reported symptom improvement. At the end of the study, 131 participants reported their symptoms had improved and 35 reported their symptoms did not improve. Of Those participants who reported their symptoms had improved, 66 were from the antibiotic treatment group and 65 were from the control group. This observed difference in proportions of patients who self-reported an improvement in symptoms in the two groups was -2.6% in favor of the control group (66/81 - 66/85 = -0.026).<br /> 
+  
+Construct a hypothesis test to determine if the difference in proportions of self-reported symptom improvement between individuals in the treatment and control groups is significant.  
+
+<br />    
+
+
+  
+***H*<sub>O<sub>**: (null hypothesis) The difference in proportions of self-reported symptom improvement of individuals in the treatment group *is not* significantly different than that of participants in the control group. The antibiotic had no impact. Treatment type and symptom improvement are independent.  
+
+***H*<sub>A<sub>**: (alternative hypothesis) The difference in proportions of self-reported symptom improvement of individuals in the treatment group *is* significantly different than that of participants in the control group. The antibiotic treatment had an impact. Symptom improvement and treatment type are not independent. 
+<br />  
+
+$$
+H_0: p_t = p_c \qquad \text{versus} \qquad H_A: p_t \neq p_c.
+$$
+<br />  
+
+
+
+Below is a contingency table which summarizes the observed results for this study:  
+
+
+
+```{r, echo=FALSE}
+evoTable <- matrix(c(387.22, 377.03, 163.04, 122.28, 407.6, 458.55, 611.4, 611.4), byrow = TRUE, ncol = 2)
+
+colnames(evoTable) <- c("2010", "2001")
+rownames(evoTable) <- c("Humans evolved, with God guiding (1)", "Humans evolved, but God had no part in process (2)",
+                          "God created humans in present form (3", "Other / No opinion (4")
+
+# library(gmodels)
+CrossTable(evoTable, prop.chisq = F, prop.t = F, prop.c = F, prop.r = F,
+           dnn = c("Response", "Year" ))
+```
+
+<br />   
+To determine the probability of observing a value as favorable as that observed in the study, the study will be simulated 10,000 times to make a conclusion under the assumption of the null hypothesis. Recalling the original study, 131 reported their symptoms improved and 35 reported no improvement. These self-reports are what will be sampled from, assigning 85 of the samples to a treatment group and the remaining 81 to a control group.
+
+```{r}
+
+# let 1 be reported 'yes' symptoms did improve. Let 0 be 'no' symtptoms did not improve
+casesSinus <- c(rep(1, 131), rep(0,35))
+
+# Simulate 10,000 iterations
+numtSinus <- 10000
+resultSinus <- rep(0, numtSinus)
+```
+  
+
+```{r, echo = FALSE}
+
+for(j in 1:numtSinus) {
+  trialSinus = sample(casesSinus, 85, replace = FALSE)
+  antiTreat = sum(trialSinus) / length(trialSinus)
+  conTreat = (sum(casesSinus) - sum(trialSinus))/(length(casesSinus) - length(trialSinus))
+  resultSinus[j] = conTreat - antiTreat
+}
+
+
+```
+<br />  
+
+Results of the simulation are plotted in a histogram is displayed below. The blue lines represent 2 standard deviations away from the mean (roughly to reject *H<sub>0<sub>*), the red dashed line represents the difference in proportions observed in the sinusitis study. 
+```{r, echo = FALSE, fig.width= 10}
+newResults = data.frame(resultSinus)
+mOutcome = mean(newResults$resultSinus)
+sdOutcome = sd(newResults$resultSinus)
+
+histResults <- ggplot(newResults, aes(resultSinus)) +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y=..density..), colour="black", fill="grey", bins = 21) +
+  labs(x= "Simulated difference in sample proportions")+
+  geom_vline(xintercept = mOutcome-(2*sdOutcome), colour="blue")+
+  geom_vline(xintercept = mOutcome+(2*sdOutcome), colour="blue")+
+  geom_vline(xintercept = -0.026, colour = "red", linetype = "dotted", size = 1.5)+
+  stat_function(fun = dnorm,
+                args = list(mean = mean(newResults$resultSinus, na.rm = TRUE), sd =                        sd(newResults$resultSinus, na.rm = TRUE)),
+                       colour = "black", size = 1)
+histResults 
+
+
+```
+ 
+<br />  
+
+Based on the simulation, it is possible to see how often getting a value at least as favorable as the difference in proportions observed in the original study (-0.026) is likely to occur if the null hypothesis were true. 
+
+```{r}
+#two-tailed p-value:
+
+signif(sum(resultSinus <= -0.026)/10000 + sum(resultSinus >= 0.026)/10000, 3)
+```
+<br />  
+
+The original study observed a difference in proportions of patients who self-reported an improvement of symptoms between the two groups of $-0.026$. Of the `r length(resultSinus)` simulated trials, results showed that a total of `r length(which(resultSinus >= -0.026))` simulations exceeded this observed value. Based on the simulations, the difference in proportions observed in the study is not statistically significant, *p* = `r round(length(which(resultSinus <= -0.026))/length(resultSinus) + length(which(resultSinus >= 0.026)) / length(resultSinus), 3)`. Thus, we fail to reject the null hypothesis and conclude that the data do not provide sufficient evidence that the proportion of participants who reported symptom improvement in the antibiotic treatment group is significantly different than that of the symptomatic control group. In other words, the data suggests the treatment did not have an impact. 
+
+## Section 2: Simulation Question 2  
+
+**2.9: The Egyptian Revolution** 
+
+Polls showed that 69% of American adults closely followed the news about the political uprising in Egypt that occurred in 2011 for the first couple weeks following the start of the uprising. A random sample taken of 30 high school students found that 17 of them followed the news closely during this time (0.57 or 57%). This is a difference in proportions of 0.12, or 12% (0.69 - 0.57).
+
+Construct a hypothesis test to determine whether or not the proportion of high students who followed the news about Egypt (0.57) significantly different than the proportion of American adults who did (0.69). 
+
+<br />  
+
+***H*<sub>O<sub>**: (null hypothesis) The proportion of high school students who followed the news about Egypt  *is not* significantly different than the proportion of American adults who did.  
+
+***H*<sub>A<sub>**: (alternative hypothesis) The proportion of high school students who followed the news about Egypt  *is* significantly different than the proportion of American adults who did.
+<br />  
+
+  
+$$
+H_0: p = 0.69 \qquad \text{versus} \qquad H_A: p \neq 0.69.
+$$
+<br />  
+
+To determine whether the proportion of high school students in the sample who followed the news about the Egyptian revolution is significantly different than the proportion of American adults who did, the observations were simulated 10,000 times to make a conclusion under the assumption of the null hypothesis. Recalling the original observations, 69% (0.69) of American adults  reported following the news about the revolution closely (thus, the remaining 31% did not).This is the distribution which will be sampled from, letting 69 cases represent those who follow the new about Egypt, and 31 representing those who do not. 
+
+```{r}
+# Let 1 = those who follow the news, let 0 = those who do not
+casesRevo <- c(rep(1, 69), rep(0, 31))
+
+# Simulate 10,000 iterations
+numtRevo <- 10000
+resultRevo <- rep(0, numtRevo)
+```
+  
+
+```{r, echo = FALSE}
+
+for(j in 1:numtRevo) {
+  resultRevo[j] = sum(sample(casesRevo, 30, replace = TRUE)) / 30
+}
+
+
+```
+
+<br />  
+
+Results of the simulation are plotted in a histogram is displayed below. The blue lines represent 2 standard deviations away from the mean (roughly to reject *H<sub>0<sub>*), the red dashed line represents the proportion of high school students who followed the news of Egypt observed in the Egyptian Revolution example.
+```{r, echo= FALSE, fig.width=10}
+
+revoResults = data.frame(resultRevo)
+mRevo = mean(revoResults$resultRevo)
+sdRevo = sd(revoResults$resultRevo)
+
+histRevo <- ggplot(revoResults, aes(resultRevo)) +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y=..density..), colour="black", fill="grey", bins = 20) +
+  labs(x= "Simulated sample proportions")+
+  geom_vline(xintercept = 0.57, colour = "red", linetype = "dotted", size = 1.5)+
+  geom_vline(xintercept = mRevo-(2*sdRevo), colour="blue")+
+  geom_vline(xintercept = mRevo+(2*sdRevo), colour="blue")+
+  stat_function(fun = dnorm,
+                args = list(mean = mean(revoResults$resultRevo, na.rm = TRUE), sd =                        sd(revoResults$resultRevo, na.rm = TRUE)),
+                       colour = "black", size = 1)
+histRevo
+
+```
+  
+<br />   
+
+Based on the simulation, it is possible to see how often getting a value at least as favorable as the proportion observed in the original study (0.57) is likely to occur if the null hypothesis were true.
+```{r}
+
+# Just as indicated in the back of the book:
+# P = proportion of simulations where Psim <= 0.57 * 2
+
+sum(resultRevo <= 0.57)/10000 * 2
+
+
+```
+
+<br />  
+
+It was observed that 57% ($0.57$) of high school students sampled reported that they followed the news about the revolution in Egypt during the first couple weeks after the uprising, compared to 69% of American adults polled. Of the `r length(resultRevo)` simulated trials, results showed the a total of `r length(which(resultRevo >= 0.57)) ` simulations exceeded this observed value. Based on the simulations, the difference in proportions observed in the study is not statistically significant, *p* = `r sum(resultRevo <= 0.57)/10000 * 2`. Thus, we fail to reject the null hypothesis and conclude that the data do not provide sufficient evidence that the proportion of high school students who followed the news about Egypt is significantly different than the proportion of American adults who did. 

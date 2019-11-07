@@ -1,0 +1,517 @@
+---
+title: "AMOD 5240H - Assignment 3"
+author: "Nick Hopewell"
+date: "November 9, 2017"
+output: html_document
+---
+
+<style>
+
+h1.title {
+  font-size: 42px;
+  color: DarkRed;
+}
+
+</style>
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(gridExtra)
+
+
+
+```
+
+```{r, echo = FALSE}
+
+set.seed(765)
+```
+
+
+**I would first like to note that I made this all look nice and then converted it to a PDF and it no longer looks nice and things are cut across different pages in some areas.**  
+
+
+## Section 1: Basic Questions  
+
+<br />   
+
+**4.5 Sleep habits of New Yorkers**  
+
+**(a)**  
+
+$H_0:$ The data do not provide strong evidence that New Yorkers sleep more or less than 8 hours a night on average (New Yorkers sleep 8 hours per night). $\mu =$ 8 hours.  
+
+$H_A:$ The data do provide strong evidence that New Yorkers sleep more or less than 8 hours a night on average (New Yorkers sleep a duration different than 8 hours per night). $\mu \neq$ 8 hours.  
+
+**(b)**  
+
+The observations are a simple random sample and consist of less than 10% of the population, therefore independence is reasonable.  
+Examining the table of summary statistics (looking at how far min and max values are away from the mean in terms of standard deviations) does not suggest much skew nor the presence of outliers. Based on these observations, the assumption of normality is reasonable.  
+
+$\bar{x} =$  7.73 $\qquad SE = \frac{0.77}{\sqrt{25}} =$ 0.154 $\qquad df =$ 24 
+
+$T = \frac{\text{7.73 - 8}}{\text{0.154}} =$ - 1.753
+
+**(c)**  
+
+$p =$ 2 * pt(1.753, df = 24, lower.tail = FALSE)  
+$p =$ 0.092 
+
+This p-value expresses that our observed T statistic is not significant at an $\alpha =$ .05 level, the data do not provide strong evidence that New Yorkers sleep more or less than 8 hours a night on average. If the true population mean of the amount of time New Yorkers slept per night was 8 hours, the probability of getting an average value of 7.73 hours per night or less from a random sample of 25 New Yorkers is about 0.092 (>.05).
+
+```{r, echo = FALSE}
+pts = seq(-4.5,5,length=100)
+plot(pts,dt(pts,df=24),type='l', 
+     xlab = "",
+     ylab = c("df = 24"))
+abline(v=c(- 1.753), col=("blue"), lty=c(2), lwd=c(3))
+abline(h = 0)
+
+```
+
+
+**(d)**  
+
+Based on the sample data, we would fail to reject the null hypothesis and conclude that the data does not provide strong evidence that New Yorkers sleep more or less than 8 hours a night.   
+
+**(e)**  
+
+Yes, 8 (hours) would be contained in the 95% confidence interval corresponding to this hypothesis test as we failed to reject $H_0$.  
+
+```{r}
+#qt(0.975, df = 24)
+#7.73 + 2.063899 * 0.154
+#7.73 - 2.063899 * 0.154
+```
+
+Based on this sample, we believe with 95% confidence that on average New Yorkers sleep between 7 hours and 41 minutes to 8 hours and 48 minutes a night.
+
+
+<br />  
+
+**4.6 Fuel efficiency of Prius**  
+
+
+**(a)**  
+
+If we assume that the sample is a random sample of Prius drivers, the sample comprises less than 10% of the population so the assumption of independence is reasonable.
+
+Because the sample size is so small it is difficult to assess if the data are skewed but the histogram does not suggest it is. It might be beneficial to think about whether it would be reasonable to expect that this population would be skewed or not. All things considered, the distribution probably is not skewed as the measure of gas mileage for the same model (and year) car should be normally distributed with most of the cars having a similar MPG, cars with less mileage having a slightly better MPG, and cars with more mileage having a slightly worse MPG due to wear and tear accumulated by the motor during travel and routine maintenance.  
+
+
+Because of this, it is reasonable to infer to the larger population of all 2012 Prius drivers because the sampling distribution of the mean is likely to be nearly normal and the estimate of the standard error is reliable.  
+
+**(b)**  
+
+The assumptions to proceed with this test are independence and normality which were described in the answer to the previous question. Although it is inherently difficult to verify normality with small sample sizes, I believe that I took the time to consider where the data came from as well as what distribution it would be reasonable to assume that it follows. 
+
+$H_0:$ The data do not provide strong evidence against the estimate that 2012 Prius drivers get 50 MPG for drivers who participate on fueleconomy.gov. Drivers who participate on fueleconomy.gov get 50 MPG. $\mu =$ 50 MPG.  
+
+$H_A:$ The data do provide strong evidence against the estimate that 2012 Prius drivers get 50 MPG for drivers who participate on fueleconomy.gov. Drivers who participate on fueleconmy.gov get a different MPG value than 50. $\mu \neq$ 50 MPG.
+
+
+$\bar{x} =$  53.3 MPG $\qquad SE = \frac{5.2}{\sqrt{14}} =$ 1.39 MPG $\qquad df =$ 13 
+
+$T = \frac{53.3 - 50}{1.39} =$ 2.374
+
+$p =$ 2 * pt(2.374, df = 13, lower.tail = FALSE)  
+$p =$ 0.0337  
+
+This p-value expresses that our observed T statistic is significant at an $\alpha =$ .05 level, the data do provide strong evidence against the EPA claim for drivers who participate on fueleconomy.gov. If the true population mean of the MPG of Prius drivers who participated on fueleconomy.gov was 50, the probability of getting an average value of 53.3 MPG or more from a random sample of 14 Prius drivers is about 0.034 (<.05). The data suggest that the 2012 Prius drivers who participated on fueleconomy.gov got more MPG than that which was claimed by the EPA.  
+
+**(c)**  
+
+```{r}
+#qt(0.975, df = 13)
+#53.3 + 2.160369 * 1.39 = 56.303
+#53.3 - 2.160369 * 1.39 = 50.297
+```
+
+Based on this sample, we believe with 95% confidence that on average Prius drivers who participate on fueleconomy.gov get 50.297 to 56.303 miles per gallon.  
+
+
+<br />   
+
+
+**4.12 High school and beyond, Part II**  
+
+**(a)**  
+
+$\bar{x}_{read-write} =$ -.0545  $\qquad  s_{diff} =$ 8.887 $\qquad  n_{diff} =$ 200  
+
+$SE_{\bar{x}_{diff}} = \frac{8.887}{\sqrt{200}}=$ 0.628  
+
+```{r}
+#-.545 + 1.96 * .628 = 0.686  
+#-.545 - 1.96 * .628 = -1.776 
+```
+
+95% CI = (-1.776,0.686)  
+
+**(b)** 
+
+Based on this sample, we believe with 95% confidence that reading scores are 1.776 points less to 0.686 points more than writing scores.   
+
+**(c)**  
+
+The confidence interval contains 0 (no difference) and thus does not provide evidence that there is a real difference in average scores. Because the null value in this case is that there is no difference between reading and writing scores, the confidence interval containing this null value means we fail to reject the null and do not find support for the alternative which would be that there is a significant difference between scores. 
+  
+<br />  
+
+
+**4.13: Gifted Children**  
+
+**(a)**  
+These data are not independent. Each of the fathers is related to one of the mothers and vice versa. Thus, there is a special correspondence between mothers and fathers so the data is considered paired data. These scores are related. 
+
+
+
+**(b)**  
+
+$H_0:$ There is no difference between mother's IQ and father's IQ on average. $\mu_{diff} =$ 0.  
+
+$H_A:$ There is a difference between mother's IQ and father's IQ on average. $\mu_{diff} \neq$ 0.  
+
+Since the students were sampled randomly and comprise less than 10% of all students, we can assume that difference scores between their mother's IQ and father's IQ are independent of another. Furthermore, the distribution of difference scores is nearly normal (slightly skewed) and the sample size is sufficiently large ($n$ = 36) so the $t$ distribution can be applied to this setting.  
+
+$\bar{x}_{Mother-Father} =$ 3.4  $\qquad  s_{diff} =$ 7.5 $\qquad  n_{diff} =$ 36
+
+$SE_{\bar{x}_{diff}} = \frac{7.5}{\sqrt{36}} =$ 1.25  
+
+$Z = \frac{3.4 - 0}{1.25} = \frac{3.4}{1.25} =$ 2.72 
+
+$p$ = 2 * pt(2.72, df = 35, lower.tail = FALSE) = 0.01  
+
+We reject $H_0$ ($p < 0.05$), and conclude that the data do provide convincing evidence that the average difference of mother's and father's IQ scores of gifted children are significantly different. The data suggests that mother's of gifted children have higher average IQ scores than father's of gifted children. 
+
+
+<br />  
+
+**4.18: Work hours and education, Part II**  
+
+
+$\bar{x}_{college} =$ 41.8 hrs $\qquad  s_{college} =$ 15.1 hrs $\qquad  n_{college} = 505$  
+$\bar{x}_{no.college} =$ 39.4 hrs $\qquad  s_{no.college} =$ 15.1 hrs $\qquad  n_{no.college} = 667$  
+<br />  
+
+$H_0:$ There is no difference in the average number of hours worked each week between US residents with a college degree and US residents without a college degree. $\mu_{college} = \mu_{no.college}$ 
+
+$H_A:$ There is a difference in the average number of hours worked each week between US residents with a college degree and US residents without a college degree $\mu_{college} \neq \mu_{no.college}$  
+<br />  
+
+Because the survey data comes from a simple random sample of less than 10% of all US residents, the observations are independent. Each distribution is barely skewed but even if they were very skewed the sample sizes are large enough to apply the $t$ distribution to each mean separately. Furthermore, how this data was sampled also ensures that that the observations in each sample are independent. Because all three of these conditions are satisfied, the difference in sample means can be modeled using the $t$ distribution.     
+
+The point estimate of the population difference is as follows:  
+$\bar{x}_{college} - \bar{x}_{no.college} =$ 2.4 hrs  
+
+The standard error of the point estimate is as follows:  
+$SE = \sqrt{\frac{S^2_c}{n_c} + \frac{S^2_n}{n_n}}$  
+$SE = \sqrt{\frac{15.1^2}{505} + \frac{15.1^2}{667}}$ = 0.891
+
+$T = \frac{2.4 - 0}{0.891}$ = 2.694  
+
+$df = min(n_1 - 1, n_2 - 1)$ = 505 - 1 = 504, 667 - 1 = 666.  
+$df$ = 504  
+
+$p$ = 2 * pt(2.694, df = 504, lower.tail = FALSE)  
+$p$ = 0.0073
+
+```{r, echo = FALSE}
+pts = seq(-4.5,5,length=100)
+plot(pts,dt(pts,df=504),type='l', 
+     xlab = "",
+     ylab = c("df = 504"))
+abline(v=c(2.694), col=("blue"), lty=c(2), lwd=c(3))
+abline(h = 0)
+
+```
+  
+  
+We reject $H_0$ ($p < 0.05$) and conclude that the data do provide convincing evidence that there is a difference in the average number of hours spent working per week between US residents with a college degree and US residents without a college degree. The data suggest that US residents with a college degree spend more time working on average than US residents without a college degree.  
+
+<br />  
+
+
+**4.19: Does the Paleo diet work?**  
+
+**(a)**  
+Looking at the confidence interval we can say with 95% confidence that people on the Paleo diet lose 0.891 points less to 4.891 pounds more than people in the control group who were given a pamphlet about portion size control.
+
+**(b)**  
+
+Based on this confidence interval, the data do not provide strong evidence that the Paleo diet is more effective for weight loss than receiving a portion size control pamphlet because the confidence interval contains 0 (the null hypothesis value that there are no difference between these groups average weight loss).  
+
+**(c)**  
+
+Because the confidence interval is very close to not containing zero it would be the case that if the Paleo group lost 8 pounds instead of 7 on average, and everything else was the same, the results would indicate a significant difference between treatment and control groups. If the confidence interval were increased by 1 pound in the positive direction it would no longer contain the null value of 0.  
+
+<br />  
+
+
+**4.38: Student performance across discussion sections**  
+  
+$H_0:$ The average student performance is the same across all discussion sections of the introductory statistics class. $\mu_{1} = \mu_{2} = ... \mu{8}$ 
+
+$H_A:$ At least one sections student performance mean is different from another/other section mean(s).  
+<br />  
+
+
+Although the data are not sample randomly, there is no obvious reason why independence would not hold for most or all of these observations. To continue we will assume that participants in each group are independent. The second ANOVA condition is that the observations within each group should be approximately normally distributed. In this case, there are a lot of groups, some of which have very few observations per group so checking normality for each group is not reasonable. If we had observed values we could calculate residual scores and then check normality by creating a normal probability plot using the residuals. Since we cannot do this, it will be assumed that the observations within each group are normally distributed. The third condition is that the variance across groups is constant. This is important in this case because sample sizes across groups differ quite a lot. We do not have side-by-side box plots to compare constant variance across groups and we can see that standard deviations seem to vary quite a lot across groups. It is unclear whether these differences are the result of natural variation or not so results should be interpreted with caution and uncertainty.  
+
+$F = \frac{MSG}{MSE}$  
+$F = \frac{75}{40.13}$ = 1.869  
+
+$dfG$ = 7, $dfE$ = 189  
+
+$Pr(>F)$ = 0.0767  
+
+In conclusion, the data do not provide convincing evidence that the average student performance is different for at least one of the introductory statistics sections. The data suggests that the average student performance is similar across all 8 sections of the class.  
+
+<br />  
+
+
+**4.39: Coffee, depression, and physical activity**  
+
+**(a)**  
+
+$H_0:$ The average physical activity level per week (measured in MET) is the same across all levels of coffee consumption. $\mu_{1} = \mu_{2} = ... \mu{5}$ 
+
+$H_A:$ At least one of the coffee consumption groups has an average physical activty level per week which is different from another/others.  
+
+**(b)**  
+
+Independence cannot be determined because there is no information provided about how these participants were sampled and whether it was a random sample. To continue we would have to assume that the participants in each coffee consumption group were independent because there is no way to discover more information about the sample. In terms of observations within each group being approximately normally distributed, the sample sizes for each group are very large so even though the size of the standard deviations relative to their corresponding means suggest the data are very skewed this is not a concern. Finally, the standard deviations are similar across each of the groups so we can assume constant variance. 
+
+**(c)**  
+
+$df_{G}$ = **4** $\quad df_{E}$ = **50734**  $\quad df_{T}$ = **50738**
+
+Sum Sq Coffee =  **10508** $\quad$   Sum Sq Residuals = 25564819 $\quad$  Sum Sq T = 25575327
+
+Mean Sq Coffee =  **2627** $\quad$   Mean Sq Residuals = **504**
+
+$F$ value = **5.2**
+
+Pr(>$F$) = 0.0003
+
+
+**(d)**  
+
+We reject $H_0$ ($p < 0.05$) and conclude that the data do provide convincing evidence that average MET scores differ between at least one set of coffee consumption groups. Overall, average physical activity levels 
+
+<br />    
+
+## Section 2(a): Sleep habits simulation
+
+Unfortunately, a permutation does not make sense here as we do not have the data to set up the simulation properly. It is also not meaningful to generate normally distributed data with the values we are given (the provided mean and sd, nor the null value of 8) and then apply the t-distribution. Because we already did a classic null hypothesis test for question 4.5, we already have the best answer to this problem that we are going to reasonably going to arrive at. 
+
+<br />    
+
+## Section 2(b): Recreate plots
+
+```{r, warning=FALSE, message=FALSE}
+#install.packages("openintro")
+library("openintro")
+
+```
+
+```{r}
+
+#  Save the correct data from  looking through the documentation  for the package 
+#  (?openintro) in an object. 
+data = hsb2
+
+# make sure it is the correct data. 
+head(data)
+```
+<br />  
+
+I am going to **show the following code** so my process is broken down step by step in detail for you. The output width and length of the plots were made to match those in the textbook simply with fig.width and fig.height specifications in the chunk below. 
+
+```{r, fig.width = 9, fig.height = 2.5, warning = FALSE, message = FALSE}
+# put data into data frame for gpplot
+data <- data.frame(data)
+
+# break into two data frames to put into one plot
+read = data.frame(group = "read", value = data$read)
+write = data.frame(group = "write", value = data$write) 
+
+# new object combining both these data frames by rows into two columns. 
+plot.data = rbind(read, write)
+
+# plot this new data frame as a box plot trying to get as close to the display
+#  in the textbook  page 202 as HUMANLY POSSIBLE while using ggplot2
+
+boxPlot <- ggplot(plot.data, aes(x=group, y=value)) +
+              stat_boxplot(geom = "errorbar", width = 0.5) +
+              geom_boxplot() +
+              geom_point(colour = "darkgrey", 
+                         alpha = .6, 
+                         position = position_nudge(x = .1)) +
+              scale_y_continuous(name = "scores", 
+                                 breaks = seq(20, 80, 20),
+                                 limits = c(20, 80)) +
+              xlab("") +
+              theme(axis.line.x = element_line(size = 0.5, colour = "black"),
+                    axis.line.y = element_line(size = 0.5, colour = "black"), 
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(), 
+                    panel.border = element_blank(),
+                    panel.background = element_blank()) 
+
+  
+# Now to make the histogram we can use this new 2 column data frame I created
+
+# now use cbind to subtract differences applying by rows
+plot.data2 <- cbind(read, write)
+# problem here is that it will repeat read and write in their own columns many times
+head(plot.data2, 4)
+
+# quick and dirty I am just going to take a data frame of the info I need
+plot.data3 <- plot.data2[,c(2,4)]
+head(plot.data3, 4)
+
+library(dplyr)
+# rename columns of interest to correct names and create a new column with difference in scores
+plot.data3 <- plot.data3 %>%
+                rename(ReadingScore = value, WritingScore = value.1) %>%
+                mutate(diff = ReadingScore - WritingScore)
+
+# should be perfect now
+head(plot.data3, 4)
+
+# build object with histogram info
+histo <- ggplot(plot.data3, aes(diff)) +
+            geom_histogram(colour = "black", fill = "grey", binwidth = 3.7) +
+            xlab("Differences in scores(read - write)") +
+            scale_y_continuous(name = "", 
+                               breaks = seq(0, 40, 10),
+                               limits = c(0, 40)) +
+            theme(axis.line.x = element_line(size = 0.5, colour = "black"),
+                  axis.line.y = element_line(size = 0.5, colour = "black"), 
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank(),
+                  panel.background = element_blank())
+
+# to arrange plots
+library(gridExtra)
+
+# boxplot then histogram in the same row.
+grid.arrange(
+  boxPlot,
+  histo,
+  ncol=2
+)
+
+```
+<br />  
+
+The histogram would look the same if I played with the bins I think.
+
+Also, there is a way to make the scales of the boxplot on the x and y look like they do in the textbook 
+but for sanity sake I am just going go with this plot. As for the vertical lines of the boxplot - I did find a way to make only them dashed but it was really silly so I just left them solid.
+
+<br />    
+
+## Section 2(c): High school simulation
+
+```{r}
+data("hsb2")
+reading_score<- hsb2[,c(7)]
+writing_score<- hsb2[,c(8)]
+```
+<br />  
+
+$H_0:$ There is no difference between average reading and writing scores among high school seniors. $\mu_1 - \mu_2 = 0$  
+$H_A$: There is a difference between average reading and writing scores among high school seniors. $\mu_1 - \mu_2 \neq 0$  
+
+Reading and writing scores are **not** independent of each other - this is paired data.
+<br />  
+
+
+Compute the point estimate of the difference of the mean. 
+Because this is paired data so we cannot use the same calculation for the standard error that we used in the class example (which was for the difference between two means when the data do not have special correspondence ie: are independent).
+```{r}
+point_est <- mean(reading_score) - mean(writing_score)
+point_est
+SE <- 8.887 / sqrt(200)
+test_stat0 <- point_est / SE
+test_stat0
+```
+<br />  
+
+To set these conditions up for a permutation test again, the denominator of the test statistic cannot be the same as in the class example. In the actual 
+```{r}
+total_score <- c(reading_score, writing_score)
+n_reading <- length(reading_score)
+n_writing <- length(writing_score)
+samp <- sample(total_score, size = n_reading + n_writing, replace = FALSE)
+samp_reading <- (samp[1:n_reading])
+samp_writing <- (samp[(n_reading + 1):(n_reading + n_writing)])
+
+test_stat <- (mean(samp_reading) - mean(samp_writing)) / (8.887 / sqrt(200)) # not included
+#  As you can see I am using the SD of the differences from the original study but the numerator is
+#  from these generated samples. This is not included in the for loop. The results vector contains
+#  differences in means instead of test statistic values.
+```
+<br />  
+
+Simulating these conditions over 10,000 iterations.
+
+```{r, echo= FALSE}
+res <- vector(length = 10000)
+for(j in 1:10000) {
+  samp <- sample(total_score, size = n_reading + n_writing, replace = FALSE)
+  samp_reading <- (samp[1:n_reading])
+  samp_writing <- (samp[(n_reading + 1):(n_reading + n_writing)])
+  res[j] <- (mean(samp_reading) - mean(samp_writing))
+}                                                      
+
+```
+<br />  
+
+The results of the simulation are plotted below. The test statistic is **NOT** plotted in this case. Instead I chose to set up the result vector of the simulation to include differences in means (point estimates) instead of test statistics (because coding the correct denominator for the paired data formula does not work here). The result vector is simply: res[j] <- (mean(samp_reading) - mean(samp_writing)). Thus, the mean difference of -0.545 found in the original study is plotted below as the red dotted line.
+<br />   
+
+```{r, echo= FALSE, fig.width=10, warning=FALSE, message=FALSE}
+
+resData = data.frame(res)
+mRes = mean(resData$res)
+sdRes = sd(resData$res)
+
+histRevo <- ggplot(resData, aes(res)) +
+  theme(legend.position = "none") +
+  geom_histogram(aes(y=..density..), colour="black", fill="grey") +
+  labs(x= "")+
+  geom_vline(xintercept = -.545, colour = "red", linetype = "dotted", size = 1.5)+
+  geom_vline(xintercept = mRes-(2*sdRes), colour="blue")+
+  geom_vline(xintercept = mRes+(2*sdRes), colour="blue")+
+  stat_function(fun = dnorm,
+                args = list(mean = mean(resData$res, na.rm = TRUE), 
+                            sd = sd(resData$res, na.rm = TRUE)),
+                       colour = "black", size = 1) + 
+  theme(axis.line.x = element_line(size = 0.5, colour = "black"),
+                  axis.line.y = element_line(size = 0.5, colour = "black"), 
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank(),
+                  panel.background = element_blank())
+histRevo
+
+``` 
+
+Based on the simulation, it is possible to see how often getting an average difference value at least as favorable as the difference in proportions observed in the original study (-0.545) is likely to occur if the null hypothesis were true.
+The corresponding empirical *p*-value for our test statistic:
+```{r}
+p_val <- signif(sum(res <= -0.545)/10000 + sum(res >= 0.545)/10000, 3)
+p_val
+
+```
+<br />   
+
+A survey done by the National Center of Education Statistics observed that the average reading and writing scores of 200 radomly sampled high school seniors differed by -0.545 points. Of the `r length(res)` simulations, a total of `r length(which(res <= -0.545)) + length(which(res >= 0.545))` simulations were as favorable as the average difference found in the original survey. Based on the simulations, the average difference in reading and writing scores is not statistically significant $p$ = `r signif(sum(res <= -0.545)/10000 + sum(res >= 0.545)/10000, 3)`. Thus, we fail to reject the null hypothesis and conclude that the data do not provide sufficient evidence of a clear difference in average reading and writing scores of high school seniors. Reading and writing scores of high school seniors are similar to each other.
+
+
+
