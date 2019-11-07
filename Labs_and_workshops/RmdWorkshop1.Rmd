@@ -1,0 +1,299 @@
+---
+title: "Rmd workshop 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, echo = FALSE}
+
+set.seed(67)
+
+```
+
+# {.tabset}
+
+In this weeks excercise we are going to go over how to simulate coin flips
+in R to build an example of basic simulation of probabilities and then build off
+and apply this understanding using a real-world scenario.  We will interpret this real 
+world scenario using probabilistic reasoning to determine whether our real world outcome
+is to be expected or fair.<br />
+
+*Don't forget the tabs just below this setence when you are ready to move
+on to the next section.*
+
+
+
+## **Flipping a Coin**
+
+To begin learning probability simulation in R we will simulate a coin flip. 
+In another post I will do more number games and simulations. I encourage you 
+to always try to follow along in R on your own computer.
+
+<br />  
+
+**1.** Create a character vector containing "H" and "T", store in object 'x'. <br /> 
+
+```{r}
+
+# 'H' will represent heads and 'T' will represent tails.
+
+x <- c("H", "T")
+
+````
+<br />
+
+
+
+**2.** Pass object x through the sample() function, specfying the functions
+  arguments such that we sample our original vector 'x' 10 times, with
+  replacement, and store this sample in the object 'y'. <br />  
+
+```{r}
+# Sample 'x' 10 times with replacement:
+
+y <- sample(x, size = 10, replace = TRUE)
+
+```
+  
+**Tip**: If you forget the arguments a function can work with or whether an argument
+has a default value (meaning it is not mandatory for the user to specify its
+value), you can look up the documentaion by typing ?function(). Or, an even
+quicker way is to type args(function). <br />   
+
+
+args(sample) returns: <br /> 
+function (x, size, replace = FALSE, prob = NULL) <br />   
+
+
+This means the sample function requires the user to specify what is being sampled (x)
+and the size of the sample (size), but will by default sample this object or vector
+without replacement (replace = ) and not specify any probability weightings (prob = NULL). <br />  
+
+<br />
+
+
+  
+**3.** Print y to the console. <br /> 
+
+```{r, eval= FALSE}
+y
+
+```
+
+Below is our output for this sample. Remember if you're following along in R you will likely get a 
+different outcome.
+
+```{r, echo= FALSE}
+y
+
+````
+<br />
+
+In stead of counting the number of heads in our outcome (this would be difficult with a larger sample),
+let's use a *logical operator* to see how many heads we got in our sample of 10 flips.<br />  
+
+
+Read "==" as "exactly equal to." We are asking R to return a vector of logical
+values which will read TRUE when a value within our sampling object (y) is exactly equal to
+"H" and FALSE when when a value is not exactly equal to "H" (in this case, when the value
+is "T").
+
+```{r}
+# Asking which values of y are exactly ewual to "H"
+
+y == "H"
+
+```
+<br />
+
+Did this initial step solve our problem of counting values in our output?
+No. We should instead subset our object y to include only outcomes which were
+heads and store this in a new object so we can apply useful functions to this object. 
+
+We can then call length() on this new object to ask R to do the counting for us.
+Because our new object was filled with only outcomes of y which were heads, 
+if we ask for the length of the vector, it informs us how many heads we flipped.
+The length function is very useful.
+
+
+```{r}
+# Subset y to include only heads, store as new object and call length
+
+how_many <- y[ y == "H" ]
+length(how_many)
+
+```
+
+```{r, echo = FALSE}
+t <- length(how_many)
+```
+<br />
+
+
+Because the probability of flipping a head or tail is 0.5, we would expect to see 5 heads
+and 5 tails after flipping a coin 10 times, on average. In our example, our observed outcome
+matched this expect outcome exactly. This won't always be the case. Remember, in 10 flips of a 
+coin it is very unlikely, but possible, to get all heads. This reflects the concept of sampling
+variation <br />  
+<br />
+
+
+
+**BONUS** 
+
+Using the sample() function is certainly the best way to simulate this experiment,
+but to add to our understanding by simulating the coin flip experiment another way
+using the runif() function and a for loop.<br />
+
+We can ask R to return a random number between 0 and 1, with equal probabilities,
+with the *runif()* function. Notice I wrapped the round() function around runif(),
+asking R to round the output of runif() to 2 decimal places just for readability
+of this excercise. <br />
+
+We know the probability of rolling a head or a tail is 0.50, so we could say that
+any outcome of runif() less than .05 represents landing on a head, where any outcome
+greater than .50 represents landing on a tail.
+
+```{r}
+
+# Get one random number between 0 and 1:
+
+randNum <- round(runif(1), digits = 2)
+randNum
+
+```
+<br />
+
+Notice the runif() function asks for a value that specifies the amount of
+times you want to generate a number between 0 and 1. We could change this
+to 1000 to get 1000 random numbers. Let's try with 15.
+
+```{r}
+randNum <- round(runif(15), digits = 2)
+randNum
+
+```
+<br />
+
+Let us create a for loop in R with the following rules: <br />
+
+a) Generate a random number between 1 and 10 (randNum) <br />
+b) If randNum < .05, outcome = heads <br />
+c) If randNum > .05, outcome = tails <br />
+d) Repeat N times (number of flips) <br />
+<br />
+
+First define N as the number of coin flips to simuate (100).
+```{r}
+N <- 100
+```
+<br />
+
+Call runif() on N to generate 100 random numbers between 0 and 1. Store in object randNum. 
+```{r}
+randNum <- runif(N)
+```
+<br />
+
+Fill values into an empty matrix (notice the NA where we would usually
+reference a data frame) matrix. We set the dimesions of the matrix to be one
+columns and as many rows as our number of trials (N). 
+
+This loop will simulate our experiment of flipping a coin 100 times.
+
+```{r}
+
+x <- matrix(NA,nrow = N,ncol = 1)
+for (i in 1:N)
+{
+ if(randNum[i] < 0.5 )
+ { x[i,1] = "H" } else 
+ { x[i,1] = "T" }
+}
+
+
+```
+<br />
+
+Now let's take a look at our probability of heads and tails. We will introduce
+a new peice of code here which uses logical operation to find only heads and only tails
+within a function instead of saving these values to a new object like we did in the
+first experiment.<br />
+
+First, let's see the probability of getting heads:
+
+```{r}
+
+
+```
+<br />
+
+Next, let's see the probability of getting tails: 
+
+```{r}
+
+```
+<br />
+
+
+
+## Flip a coin many times
+
+Now flip a coin 100,000 times and count how many heads you get.
+We are going to use the same method to simulate these flips except we will
+save new objects to our R environment. <br />
+
+
+
+```{r}
+bigSim <- sample(x, size = 100000, replace = TRUE)
+bigLogic <- (bigSim =="H" )
+howBig <- length(which(bigLogic))
+
+
+```
+
+Compare how many heads you got by calling length() on the object where you stored
+only heads in our outcome (bigLogic) with how many times the coin was flipped.
+
+```{r}
+length(which(bigLogic))
+```
+
+
+In our simultion, `r howBig` heads came up. This outcome is very
+close to 50,000 which is the outcome we would expect if the coin
+were fair and we flipped it 100,000 times like we did. 
+
+
+
+## If you want to use a variable in your text, like a p value
+
+You want to add a echo=false snippet and call it in the text
+using an embedded feature. 
+
+This is very, very powerful.
+
+
+See below: 
+
+```{r, echo = FALSE}
+
+x <- sample(1:1000, 100000, replace = TRUE)
+logic <- (x < 100)
+how_many <- length(which(logic))
+
+```
+
+There are `r how_many` elements of $x$ which are $<100$
+
+
+
+
+
+
+

@@ -1,0 +1,71 @@
+ ---
+title: "LaTeX example"
+author: "Nicholas Hopewell 0496633"
+date: "October 3, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## A Demo of Inline and Seperated LaTex
+
+How to do a subscript in LaTeX
+Written using underscores: $p_0$ or $\alpha_1$
+
+what if we wanted to use a complex subscript: $p_{j+1}$. compare to $p_j-1$
+Any subscript more than one unit must be inside curly brackets
+
+we can do powers: $\alpha^1$, or $\beta^{p+1}$
+
+
+If you want an entire formula:
+$$
+H_0: p_0 = 0 \qquad \text{versus} \qquad H_A: p_0 \neq 0.
+$$
+
+
+## do a fraction 
+$$
+x = \frac{\text{my numerator goes here}}{\text{mydenominator}}
+
+$$
+
+
+
+## do square root
+$$
+\sqrt{\text{ this is my inside of my square root}}
+
+$$
+
+
+## Cascade fractions
+
+$$
+x = \frac{1}{\sqrt{1 + \frac{1}{\sqrt{1 + \frac{1}{\sqrt{1}}}}}
+$$
+
+
+To do an entire math block: use split:
+
+$$
+\begin{split}
+\alpha  &= x^2+1    \\
+        &= (5) +1   \\
+        &= 25+1     \\
+        &= 26
+
+\end{split}
+$$
+
+Our conclusion is that $p_0 =$ `r my_variable`
+
+
+
+Inside the dollar signs, it interprets your doing a formula
+
+
+Go to trentu-math.slack.com  - join with your email, join amod group
+- you can automatically paste screen shots to send ot wesley if code is not working

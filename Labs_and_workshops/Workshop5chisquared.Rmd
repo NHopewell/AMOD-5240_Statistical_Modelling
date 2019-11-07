@@ -1,0 +1,58 @@
+---
+title: "Workshop 5 - reading data/chi squared"
+author: "Nicholas Hopewell"
+date: "October 11, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+SEE HIS FILE FOR THE FIRSTPART 
+
+Compute chi-squared test statistic for independence 
+
+cont_table in his example were the observed values
+expected = the expected values
+
+```{r}
+
+# get the sum of the difference between observed and expected squared divided by expected
+chisq_test <- sum((cont_table - expected)^2 / expected)
+
+
+# get the degrees of freedom:
+df <- (2-1) * (3-1)  #rows -1 * columns - 1
+
+# get p-values
+
+p_val <- pchisq(chisq_test, df = df, lower.tail = FALSE)
+
+```
+
+
+So, for a NHST of independence, a *p*-value of `r p_val` means that we do not have evidence at a $\alpha=0.05$ level to reject the null hypothesis and conclude that the two variables are dependent. 
+
+
+
+## Makin functions
+
+see the part of his code where he found the row and column totals as well as the overall total? It was very lengthy. lets do it in a function
+
+```{r}
+
+# he saved the function as a script file then sourced it before calling the function
+# there should be 2 files on blackboard
+
+chisq_test <- function(observed) {
+  
+  
+  
+  
+}
+
+
+```

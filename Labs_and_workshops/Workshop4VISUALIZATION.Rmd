@@ -1,0 +1,214 @@
+---
+title: "Workshop 4 - visualization"
+author: "Nicholas Hopewell"
+date: "October 10, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Basic plots
+
+
+LOOOK UP ALL THE ARGUEMNTS FOR ?PLOT 
+
+All we need is Y..
+
+```{r}
+
+y <- rnorm(50, mean = 10, sd =2)
+plot(y)
+
+```
+
+
+rnorm creates random normal variables
+
+This is not very pretty. We can tweak it. 
+
+```{r}
+x <- paste0("A", 1:50)
+plot(1:50, y, xaxt = 'n')
+axis(side = 1, at = 1:50, labels = x)
+
+```
+The above code makes the axis not appear and then puts it in manually. 
+This is good if u need to change the measurement of the axis. 
+
+
+Another example where we subset:
+
+```{r}
+plot(1:50, y, xaxt = 'n')
+axis(side =1, at = seq(1:50, 4), labels= x[seq(1:50, 4)])
+
+```
+
+
+## Plot arguemnts 
+
+Lets start with a fully expanded plot to demo some arguments
+Here is a bad example where the variable is going off the screen:
+```{r}
+x <- 1:20
+y <- rnorm(20)
+plot(x,y, type = "l", col = "red", xlab = "X var", ylab = "YVar", main = "My Plot's Title")
+y2<- rnorm(20) +0.3
+lines(x,y2,col = "blue")
+
+```
+
+
+To fix this so the lines all fit we compute the min and the max before we start:
+
+```{r}
+x <- 1:20
+y <- rnorm(20)
+ymax <- max(y, y2)
+ymin <- min(y, y2)
+plot(x,y, type = "l", col = "red", xlab = "X var", ylab = "YVar", main = "My Plot's Title", ylim = c(ymin, ymax))
+y2<- rnorm(20) +0.3
+lines(x,y2,col = "blue")
+
+```
+
+
+But which line is which? Add a legend:
+add points as well not as a line just as points then add that to legend
+Notice how we ask the legend to fill with colour since we added dots and we cant covery that as a black
+line in the legend
+```{r}
+x <- 1:20
+y <- rnorm(20)
+ymax <- max(y, y2)
+ymin <- min(y, y2)
+plot(x,y, type = "l", col = "red", xlab = "X var", ylab = "YVar", main = "My Plot's Title", ylim = c(ymin, ymax))
+y2<- rnorm(20) +0.3
+lines(x,y2,col = "blue")
+points(x, rnorm(20), col = "black")
+legend(x = "bottomright", legend = c("Red Line", "Blue Line"), 
+      col = c("red", "blue"), lty = c(1,3),
+      fill = c("red", "blue", "black"))
+
+
+
+```
+
+
+
+## Types of plots" the *type argument
+
+
+the argument **type**. we have used it to create **l** (lines) and **p** (points)
+
+Type = 
+
+**p** points
+**l** lines
+**b** both lines and points
+**c** lines wiht holes where the poins should be
+**h** bar-plot / histogram like display
+
+display graphs in the same frame (par function), displaying the same plot in 4 ways:
+
+```{r}
+
+x <- 1:15
+y <- rnorm(15,10,3)
+plot(x,y, type = "l")
+plot(x,y, type = "b")
+plot(x,y, type = "c")
+plot(x,y, type = "h")
+
+```
+
+
+The histrgram like plot looks funky, lets chang the bar width. 
+Also change the end of the lines to squared off lines and not rounded (lend = 1)
+```{r}
+x <- 1:15
+y <- rnorm(15,10,3)
+plot(x,y, type = "h", lwd = 15, lend = 1, col = "grey60")
+
+```
+
+## And now for something completely different...
+
+**data frames** are objects which store data in R, where the storage is done by column, and each column can have its own data type - that last part is the most important part. When you make a matrix they are all the same types of data, in data frames you can have any combination of data types. 
+
+The call to creat a dataframe is data.frame...
+
+```{r}
+
+t <- data.frame(X =c(1,2,3),
+                Y =c("a", "b", "c"),
+                Z =c(TRUE, TRUE, FALSE))
+
+str(t)
+
+
+# R will automatically convert string data types to factors,
+#to stop r from converting Y to a factor, indicate that in the last line.
+# this is very very important. If you specify it, r wont change ur data
+u <- data.frame(X =c(1,2,3),
+                Y =c("a", "b", "c"),
+                Z =c(TRUE, TRUE, FALSE),
+                stringsAsFactors = FALSE)
+```
+
+
+Tomorrow we will demonstrat reading data from files, and obtaining data.frame
+
+
+**ALWAYS** read in your data and call str() on it to make sure it is what you need it to be because it usually will not be. 
+
+
+## Access of a Data frame sub-objects
+
+Tje \$ operator in R accesses sub:objects of objects **by name**. If the object does not have named sub-objects.
+
+
+There are three essential operators for accessing data in R. they are: 
+
+* [[
+* [
+* $
+
+
+data frames are actually vectorized pointers to list, each element is actually a list. 
+The [[]]  operator says give me a certain element of the list.
+```{r}
+cc
+
+u[[2]]
+u$Y
+u[["Y"]]
+```
+
+What happens if you need to pull things out by name, and we dont know the names?
+
+```{r}
+
+
+u <- data.frame(X =c(1,2,3),
+                Y =c("a", "b", "c"),
+                Z =c(TRUE, TRUE, FALSE),
+                stringsAsFactors = FALSE)
+
+names(u)
+u[[names(u)[2]]]
+
+
+```
+
+What happens if we create a data.frame by casting a matrix?
+
+```{r}
+x <- matrix(data = 1:12, nrow= 4, ncol = 3)
+y <- as.data.frame(x)
+names(y) <- c("X", "Y", "Z")
+
+
+```

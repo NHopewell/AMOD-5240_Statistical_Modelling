@@ -1,0 +1,162 @@
+---
+title: 'AMOD 5240H - Workshop #07'
+author: "Wesley Burr"
+date: "November 14, 2017"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Difference in Means - Simulation
+
+Today we are going to examine two datasets from the "Lock5" textbook. They are contained in an R package called **Lock5withR**. Install it first.
+
+```{r}
+# install.packages("Lock5withR")
+library("Lock5withR")
+```
+
+We are interested in the problem of differences of means. We are going to use the American Community Survey (ACS) - Employment Data. 
+
+```{r}
+data("EmployedACS")
+str(EmployedACS)
+male_income <- EmployedACS[EmployedACS$Sex == 1, "Income"]
+female_income <- EmployedACS[EmployedACS$Sex == 0, "Income"]
+mean(male_income)
+mean(female_income)
+```
+
+Now, let's compute a point estimate of the difference of mean:
+```{r}
+point_est <- mean(male_income) - mean(female_income)
+SE <- sqrt( var(male_income)/length(male_income) + var(female_income)/length(female_income) )
+test_stat0 <- point_est / SE
+test_stat0
+```
+
+Now, we would like to use permutation methods and create a simulation for testing this. We need to take all of the incomes, and sample for the men and the women. This is one permutation:
+
+```{r}
+total_income <- c(male_income, female_income)
+n_men <- length(male_income)
+n_fem <- length(female_income)
+samp <- sample(total_income, size = n_men + n_fem, replace = FALSE)
+samp_men <- (samp[1:n_men])
+samp_fem <- (samp[(n_men + 1):(n_men + n_fem)])
+test_stat <- (mean(samp_men) - mean(samp_fem)) / sqrt( var(samp_men)/n_men + var(samp_fem)/n_fem)
+```
+
+Now, let's turn this into a proper simulation. 
+```{r}
+res <- vector(length = 10000)
+for(j in 1:10000) {
+  samp <- sample(total_income, size = n_men + n_fem, replace = FALSE)
+  samp_men <- (samp[1:n_men])
+  samp_fem <- (samp[(n_men + 1):(n_men + n_fem)])
+  res[j] <- (mean(samp_men) - mean(samp_fem)) / sqrt( var(samp_men)/n_men + var(samp_fem)/n_fem )
+}                                                      
+hist(res)
+abline(v = test_stat0, col = "blue")
+```
+
+Let's formally state this:
+$H_0:$ $\mu_1 - \mu_2 = 0$ versus $H_A$: $\mu_1 > \mu_2$
+
+Then, our empirical *p*-value is computed as:
+```{r}
+p_val <- length( which ( res >= test_stat0 ) ) / 10000
+p_val
+```
+
+The conclusion is then that we reject the null hypothesis, and conclude that the data provide convincing evidence of $\mu_1 > \mu_2$, in other words, male income is higher than female income for America in 2011.
+
+Let's conclude by doing this the "fast" way. 
+```{r}
+1 - pnorm(test_stat0)
+```
+
+## Computing ANOVA in R
+
+You can do ANOVA by hand, but it's rather difficult. In this section, we'll explore an ANOVA problem in R, starting from a raw data set. This first example is of an ANOVA for regression (total model fit), something we'll talk about tomorrow in class.
+
+We are interested in whether the relationship between Calories and Sugars.
+```{r}
+library("Lock5withR")
+data(Cereal)
+plot(x = Cereal$Sugars, y = Cereal$Calories, type = "p")
+fit <- lm(Calories ~ Sugars, data = Cereal)
+summary(fit)
+aov(fit)
+```
+
+The key is setting up a properly formatted data.frame object. If it's in a form ready for regression, it's ready for you to use.
+
+If you want to compute an ANOVA on a multiple-factor problem, like the questions on Assignment 3, it's slightly more complicated. We'll use a data set on Fish Gills, again from the Lock5 data sets.
+
+```{r}
+data(FishGills3)
+head(FishGills3)
+levels(FishGills3$Calcium)
+```
+
+As you can see from this data set, FishGills3 contains two columns: Calcium and GillRate. There are three levels of Calcium: Low, Medium, and High. This means we can split the data into three groups, based on Calcium levels. 
+
+We need to examine the data. The ggplot-family package ggpubr is great for this.
+
+```{r}
+install.packages("ggpubr", repos = "https://cloud.r-project.org")
+library("ggpubr")
+ggboxplot(FishGills3, x = "Calcium", y = "GillRate", 
+          color = "Calcium", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+          order = c("Low", "Medium", "High"),
+          ylab = "Gill Rate", xlab = "Calcium Levels")
+```
+
+The variances of the three groups appear to be the same. Examine the means:
+
+```{r}
+ggline(FishGills3, x = "Calcium", y = "GillRate", 
+       add = c("mean_se", "jitter"), 
+       order = c("Low", "Mean", "High"),
+       ylab = "Gill Rate", xlab = "Calcium Levels")
+```
+
+Let's proceed with our ANOVA. It's aov() again, just with a Factor variable established.
+
+```{r}
+# Compute the analysis of variance
+res.aov <- aov(GillRate ~ Calcium, data = FishGills3)
+# Summary of the analysis
+summary(res.aov)
+```
+
+To access the results, notice that the summary(res.aov) is actually a list of one element containing a data.frame (more list elements):
+```{r}
+str(summary(res.aov))
+```
+
+which means we can access the elements by doing:
+
+```{r}
+tab_anova <- summary(res.aov)[[1]]
+str(tab_anova)
+```
+
+Then all the elements are list elements:
+
+```{r}
+tab_anova[[1]]
+tab_anova[[2]][1]
+```
+
+So to get the p-value extracted, we could use
+```{r}
+tab_anova[[5]][1]
+```
+
+This concludes our example.

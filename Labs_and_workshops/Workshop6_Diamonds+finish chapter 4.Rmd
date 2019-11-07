@@ -1,0 +1,66 @@
+---
+title: "Amod_statmod_finish_chpt_4_lec"
+author: "Nicholas Hopewell"
+date: "November 1, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Diamonds 
+
+data set built into ggplot2
+library(ggplot2)
+data(diamonds)  
+
+**T statistic**  
+
+Used for comparing two means when one of the sample means at least is small. n < 30.   
+
+All that changes is the standard error. - it is now a pooled standard error because we are pooling together the pooled sets. 
+
+The degrees of freedom are also differen. see the slide.  
+
+The numerator is still the same. 
+
+The point estimate is still th e difference betwen the means. the null is that there is no difference, so 0.  
+
+If you have a absolute value greater than 3 or 4 youll probably reject. If loswer than  youll probbaly not reject.  
+
+**p-value** 
+
+to calculate the p value you want to use pt(), specifying the degrees of freedom. Not pnorm(), that is used for the normal distribution.  pt = ho much area is to the left of a value.
+
+See the slide for wirte upfor the pvalue.  Conclusion = but a .99 diamond instesd of a 1 carrat diamond.  
+
+
+**confidence interval** 
+
+
+if you are setting up a confidence interval at an alpha = .05 rate for a one-tailed test, the confidence is adjusted to 90% so that there is 5% in each tail. If you used a 95% confidence interval we would only have 2.5% in each tail.  
+
+if you wanted a 95% two tail it would be qt(0.025, df = ), this would be a 97.5% one-tail.  
+Similarly a 99% two tail is a 99.5% one tail.  
+
+alpha = the sum of the critical areas.   
+
+
+qt is always to the left. 
+
+
+critical value slide  
+
+youre looking for a .05 in one-taild   
+
+
+
+**MUST BE VERY CAREFUL**  confidence intervals are always written as two-tailed. if you are setting up a one tailed test with 5% in one tail, that is equivalent to a two-tailed with 10% total. Thus, even though you're looking for .05 in one tail you are still doing a 90% ci. we are 90% confident that...
+
+
+
+
+
+
+

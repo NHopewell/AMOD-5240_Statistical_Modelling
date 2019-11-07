@@ -1,0 +1,67 @@
+---
+title: "Stat_Mod_ANOVA_lec"
+author: "Nicholas Hopewell"
+date: "November 1, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ANOVA  
+
+What happens when your comparing more than 2 means?  '
+ARe one or more of them different to each other or the overall average?  
+
+
+2 groups = t and z  
+
+3+ groups = F  
+
+*null hypothesis* in anova = mean of the outcome is the same across all categories.  
+*alternative*  at least one mean is different - doesnt say which one.   
+
+**conditions**  
+ 
+carefully consider whther the data may be independant (ie, no pairing - cant take samples form the same place in a river)  
+
+The observations within each group should be nearly normal.  
+
+standard deviations need to be in the same ballpark.    
+
+
+F-distrubtionand p-value - only use the upper tail (normally), has 2 degrees of freedom  
+
+f-ratio is basically the ratio of two chi-squares, if u take 2 chi-squares and compute the ratio between them then you get an f-value.   
+
+
+
+**checking with boxplot**  
+
+look at the slide, notice how the variance is of the interquartile ranges are hugely different, the median values are obviouslt not of the same thing.    
+
+variability is supposed ot be equal across all groups. 
+
+
+**bonferoni correction post hoc-test**  
+
+if you have a significant anova, you can do a bonferoni correction and do all the individual comparions to see where the difference is. But, you might not always get consistent results. A difference that triggers an ANOVA might not trigger individual t tests with the bonferoni correction...
+
+if you are doing a bunch of comparsions, say 10, at a .95 confidence level. this averages out to .59 overall for all 10. .95^10  -  this might as well be flipping a coin.  
+
+the conferoni correction involved dividing alpha by the amount of comparisions so this adjustment averages out to being acceptable in the end.  
+
+.05 / 10 - .005  so for 10 comparions we would use an alpha of .005.   
+
+
+**boxplot slides**  we look at the boxplots and see hwich groups differ from each other.  
+
+**which means differ cont**  
+
+see slide. no difference statistically between bottom and mid, but there is for bottom and surface.   
+
+notice the corrected alphas.  
+
+
+

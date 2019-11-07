@@ -1,0 +1,128 @@
+---
+title: "Workshop 05 - AMOD 5240H"
+author: "Wesley Burr"
+date: "October 11, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Content of Today's Workshop
+
+* reading files / file I/O
+* making matrices for contingency tables
+* performing a chi-squared test of independence
+* introduction to function-making
+
+## The 'datasets' Package
+
+This is a package built into R. It contains a large number of pre-built data sets which can be loaded by using the **data** command.
+
+```{r}
+data("LakeHuron")
+plot(LakeHuron, type = "l")
+```
+
+## Reading Files
+
+There are a huge number of file formats which R supports, in one way or another. The easiest way to load data is from a previously saved R object. 
+
+```{r}
+x <- rnorm(1000)
+save(file = "normal_vars.rda", x)
+```
+
+What if I wanted to reload this?
+```{r}
+load(file = "normal_vars.rda")
+```
+RMD will automatically look for files in its current working directory (wherever it is saved). If, however, you're trying to test your RMD code in the console ... the console does not automatically set the working directory. 
+ 
+We use the command **setwd()** to set the working directory. 
+
+```{r}
+setwd("/home/wburr/doc/Teaching/2017_AMOD5240H/Workshops/Workshop05/")
+```
+
+Rather than using **save**, which only creates rda files, we have many other options for saving out data.
+
+## CSV Files
+
+We can read and write CSV files by using the functions **read.csv** and **write.csv**. 
+
+```{r}
+ap_dat <- read.csv("NO2_original_Jun7_2016.csv",
+                   header = TRUE,
+                   stringsAsFactors = FALSE)
+str(ap_dat)
+unique(ap_dat$year)
+```
+
+What if we wanted to save that **x** variable as a CSV?
+```{r}
+write.csv(x = x, file = "normal_var.csv", quote = FALSE,
+          row.names = FALSE)
+```
+
+## Excel Files (.xls and .xlsx)
+
+The package **readxl** has been released (and is part of the **tidyverse**). To load this, you need to have it installed, and then load it using **library()**. 
+
+```{r}
+install.packages("readxl")
+library("readxl")
+spec_pm <- read_excel("2015_S90132_OCEC_spec.xls")
+spec_pm$`OC1 µg/m3`[spec_pm$`OC1 µg/m3` < 0] <- NA
+plot(spec_pm$`OC1 µg/m3`, type = "l")
+```
+
+# Making Matrices for Contingency Tables
+
+We've reviewed chi-squared tests for independence (from Chapter 3.3 and 3.4). These tests are fairly simple arithmetically, just incredibly tedious.
+
+```{r}
+cont_table <- matrix(data = c(132, 154, 160, 
+                              111, 125, 99),
+                     nrow = 2, ncol = 3)
+
+augment <- matrix(data = NA, nrow = 3, ncol = 4)
+augment[1:2, 1:3] <- cont_table
+augment[3, 1] <- sum(augment[-3, 1])
+augment[3, 2] <- sum(augment[-3, 2])
+augment[3, 3] <- sum(augment[-3, 3])
+augment[1, 4] <- sum(augment[1, -4])
+augment[2, 4] <- sum(augment[2, -4])
+augment[3, 4] <- sum(augment[-3, 4])
+
+# Compute Expected matrix
+expected <- cont_table
+for(i in 1:3) {
+  for(j in 1:2) {
+    expected[j, i] <- augment[j, 4] * augment[3, i] / augment[3, 4]
+  }
+}
+```
+
+Now, let's compute a chi-squared test statistic for independence. 
+```{r}
+chisq_test <- sum((cont_table - expected)^2 / expected)
+df <- (2-1) * (3-1)
+p_val <- pchisq(chisq_test, df = df, lower.tail = FALSE)
+```
+So, for a NHST of independence, a *p*-value of
+`r p_val` means that we do have evidence at a $\alpha=0.05$ level to reject the null hypothesis and conclude that the two variables given in this problem are dependent.
+
+## Function Making
+
+We'd like to create a function, which, given a table (matrix form), can do all of this for us, without us having to write the code over and over and over and over again.
+
+```{r}
+source("chisq_test.R")
+chisq_test(cont_table)
+```
+
+To create and run this function regularly, we need to somehow set it up to be sourced. We create a separate .R file for this function, and then we load it at the top of our document / working space / whatever, and we can then use it. Functions are **loaded** by using **source()**. 
+
+
