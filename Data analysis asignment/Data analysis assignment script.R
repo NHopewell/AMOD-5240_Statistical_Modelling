@@ -7,9 +7,6 @@
 ###      Prediction of House Prices     ###
 
 
-#  Set working directory 
-setwd("C:\\Users\\nicho\\OneDrive\\Desktop\\Assignments\\Statistical Modelling assignments\\Data analysis asignment")
-
 #  Read csv file and save in object 'priceData'
 priceData<-read.csv("house_prices.csv", header = TRUE)
 
